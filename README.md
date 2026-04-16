@@ -51,20 +51,6 @@ Auth            →  Supabase Auth
 E-posta         →  Resend API
 Hosting         →  Vercel + Railway
 ```
-
----
-
-## 📁 Repo İçeriği
-
-```
-kisisel-harcama-kocu/
-├── MVP_SCOPE.md       # MVP kapsamı, özellik listesi, teknik yığın, takvim
-├── PRD.md             # Ürün Gereksinimleri Belgesi (detaylı)
-└── README.md          # Bu dosya
-```
-
-> 💡 Bu repo şu an **fikir ve planlama aşamasındadır.** Geliştirme başladığında kod dosyaları eklenecektir.
-
 ---
 
 ## 📄 Belgeler
