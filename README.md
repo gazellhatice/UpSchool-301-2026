@@ -5,7 +5,7 @@
 ![Status](https://img.shields.io/badge/durum-geliştiriliyor-yellow)
 ![License](https://img.shields.io/badge/lisans-MIT-blue)
 ![PRD](https://img.shields.io/badge/PRD-v1.0-green)
-![Stack](https://img.shields.io/badge/YZ-Claude%20API-blueviolet)
+![Stack](https://img.shields.io/badge/YZ-...%20API-blueviolet)
 
 ---
 
