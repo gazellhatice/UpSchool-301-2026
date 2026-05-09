@@ -1,0 +1,110 @@
+name: kisisel_harcama_kocu_son
+description: Daily expense tracking and personal finance management app.
+publish_to: 'none'
+version: 1.0.0+1
+
+# ─────────────────────────────────────────────
+#  Dart / Flutter SDK
+#  Flutter 3.29+ gerektirir (Dart 3.7+)
+# ─────────────────────────────────────────────
+environment:
+  sdk: '>=3.7.0 <4.0.0'
+
+# ─────────────────────────────────────────────
+#  PRODUCTION DEPENDENCIES
+# ─────────────────────────────────────────────
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # ── Firebase ─────────────────────────────────────────────────────
+  # ÖNEMLİ: Tüm firebase_* paketleri aynı uyumlu versiyonda olmalı.
+  # flutterfire configure komutu bu versiyonları otomatik belirler.
+  firebase_core: ^4.6.0          # FlutterFire zorunlu çekirdek
+  firebase_auth: ^6.1.3          # Email, Google, Apple ile kimlik doğrulama
+  cloud_firestore: ^6.1.1        # Gerçek zamanlı NoSQL bulut veritabanı
+  google_sign_in: ^6.2.2         # Google OAuth akışı
+
+  # ── State Management: Riverpod 3 ─────────────────────────────────
+  # Provider'ın modern, tip-güvenli ve test edilebilir halefi
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # ── Yerel Veritabanı: Isar ───────────────────────────────────────
+  # Offline-first mimari: veriler önce cihazda, sonra Firestore'a sync
+  # NOT: isar v4 hâlâ dev aşamasında → stable v3 kullanıyoruz
+  drift: ^2.21.0
+  sqlite3_flutter_libs: ^0.5.24
+  path: ^1.9.0
+  path_provider: ^2.1.4          # Veritabanı dosyasının dizini
+
+  # ── Navigasyon ───────────────────────────────────────────────────
+  # Declarative routing: deep link, web URL, auth redirect
+  go_router: ^14.6.2
+
+  # ── UI & Grafikler ───────────────────────────────────────────────
+  fl_chart: ^0.69.0              # Pasta, bar ve çizgi grafikler
+  table_calendar: ^3.1.3         # Gelişmiş takvim widget'ı
+  google_fonts: ^6.2.1           # Poppins, Inter vb. web fontları
+  flutter_screenutil: ^5.9.3     # Responsive boyutlandırma (px/sp/dp)
+  gap: ^3.0.1                    # SizedBox'ın kısa yol alternatifi
+
+  # ── Utility ──────────────────────────────────────────────────────
+  intl: ^0.20.2                  # Tarih/saat/para formatı + arb i18n
+  shared_preferences: ^2.3.3     # Basit key-value kalıcı depolama
+  uuid: ^4.5.1                   # İşlem ID'leri için UUID üretici
+
+  # ── Kod üretimi annotation'ları (runtime'da gerekli) ─────────────
+  freezed_annotation: ^2.4.1     # Immutable data sınıfları
+  json_annotation: ^4.9.0        # JSON serialize/deserialize
+
+  # ── UX ───────────────────────────────────────────────────────────
+  fluttertoast: ^8.2.10          # Hızlı toast/snackbar mesajları
+  in_app_review: ^2.0.9          # Play Store / App Store puanlama
+
+  cupertino_icons: ^1.0.8
+
+# ─────────────────────────────────────────────
+#  DEV / BUILD DEPENDENCIES
+# ─────────────────────────────────────────────
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+  # ── Kod üreticiler ───────────────────────────────────────────────
+  # Çalıştırmak için: dart run build_runner build --delete-conflicting-outputs
+  build_runner: ^2.4.13          # Tüm generatorların ortak motoru
+  riverpod_generator: ^2.4.0     # @riverpod → Provider/Notifier kodu
+  freezed: ^2.5.7                # @freezed → copyWith, ==, toString, fromJson
+  json_serializable: ^6.9.0      # @JsonSerializable → fromJson / toJson
+  drift_dev: ^2.21.0          # Drift veritabanı için kod üreticisi
+
+  # ── Splash screen ────────────────────────────────────────────────
+  # Çalıştırmak için: dart run flutter_native_splash:create
+  flutter_native_splash: ^2.4.3
+
+# ─────────────────────────────────────────────
+#  SPLASH SCREEN AYARLARI
+# ─────────────────────────────────────────────
+flutter_native_splash:
+  color: "#FFFFFF"
+  color_dark: "#121212"
+  image: assets/images/splash_logo.png
+  android: true
+  ios: true
+  fullscreen: false
+
+# ─────────────────────────────────────────────
+#  FLUTTER AYARLARI
+# ─────────────────────────────────────────────
+flutter:
+  generate: true          # intl arb dosyalarından otomatik kod üretimi
+  uses-material-design: true
+
+  assets:
+    - assets/images/      # logo, splash, illüstrasyonlar
+    - assets/icons/       # özel kategori ikonları
+    - lib/core/l10n/      # arb çeviri dosyaları (tr.arb, en.arb)

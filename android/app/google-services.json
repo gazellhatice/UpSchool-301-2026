@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "290830664216",
+    "project_id": "kisisel-harcama-kocu",
+    "storage_bucket": "kisisel-harcama-kocu.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290830664216:android:ddb0f35fa43d81c48e796d",
+        "android_client_info": {
+          "package_name": "com.example.kisisel_harcama_kocu_son"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsTk6frSHw84pDWK8LaW3FSnRUb7lxbPw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
