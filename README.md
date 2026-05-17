@@ -1,87 +1,135 @@
-# 💰 Kişisel Harcama Koçu
+# Kişisel Harcama Koçu
 
-> Banka ekstrenizi yükleyin, yapay zeka koçunuzla konuşun — yargılanmadan, rakamların arkasındaki alışkanlıkları keşfedin.
+Gelir ve giderlerini tek yerden takip etmeni sağlayan, Türkçe arayüzlü bir kişisel finans mobil uygulaması. Offline-first yerel depolama ile çalışır; internet olduğunda Firebase Firestore ile senkronize olur.
 
-![Status](https://img.shields.io/badge/durum-geliştiriliyor-yellow)
-![PRD](https://img.shields.io/badge/PRD-v1.0-green)
-![Stack](https://img.shields.io/badge/YZ-...%20API-blueviolet)
+## Özellikler
 
----
+- **Kimlik doğrulama** — E-posta/şifre ile kayıt ve giriş, Google ile giriş, şifre sıfırlama
+- **Özet ekranı** — Aylık net bakiye, gelir/gider kartları, harcama kullanım oranı, son işlemler
+- **İşlem yönetimi** — Gelir/gider ekleme, kategori seçimi, tarih ve not, işlem silme
+- **Analiz** — Kategorilere göre aylık gider dağılımı (pasta grafik + liste)
+- **Takvim** — Güne göre işlem listesi
+- **Kategoriler** — Varsayılan kategoriler + özel kategori ekleme
+- **Senkronizasyon** — Drift (SQLite) ↔ Firestore, çevrimdışı çalışma desteği
+- **Tema** — Açık / koyu mod
 
-## 🧠 Ne Soruyor Bu Uygulama?
+## Teknoloji yığını
 
-> *"Bu ay yeme-içmeye geçen aya göre %40 daha fazla harcadın. Bir şeyler mi değişti?"*
+| Katman | Teknoloji |
+|--------|-----------|
+| UI | Flutter 3.x, Material 3, Google Fonts |
+| Durum yönetimi | Riverpod |
+| Yerel veri | Drift (SQLite) |
+| Bulut | Firebase Auth, Cloud Firestore |
+| Grafik | fl_chart |
+| Takvim | table_calendar |
+| Diğer | connectivity_plus, shared_preferences, intl |
 
-Geleneksel bütçe uygulamaları sana pasta grafik gösterir. **Kişisel Harcama Koçu**, seninle konuşur.
+## Gereksinimler
 
-PDF banka ekstrenizi yükleyin → YZ harcamalarınızı kategorize etsin → Kişisel koçunuzla sohbet edin → Alışkanlıklarınızı anlayın.
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (Dart ^3.5.4)
+- Android Studio / Xcode (mobil derleme için)
+- Firebase projesi (Auth + Firestore etkin)
 
----
+## Kurulum
 
-## ✨ Özellikler
+1. Depoyu klonlayın ve proje klasörüne girin:
 
-| Özellik | Açıklama |
-|---|---|
-| 📄 **PDF Ekstre Analizi** | Ziraat, Garanti, İş Bankası, Yapı Kredi formatlarını okur |
-| 🗂️ **Otomatik Kategorilendirme** | Market, Yeme-İçme, Ulaşım, Eğlence ve 4 kategori daha |
-| 📊 **Anlık Dashboard** | Kategori dağılımı, en yüksek harcamalar, aylık karşılaştırma |
-| 🤖 **YZ Koçluk Sohbeti** | Api destekli, empati kuran ve yargılamayan koç |
-| 📬 **Haftalık Rapor** | Her Pazartesi gelen kişisel harcama özeti |
+```bash
+git clone <repo-url>
+cd kisisel_harcama_kocu_1
+```
 
----
+2. Bağımlılıkları yükleyin:
 
-## 🖼️ Uygulama Akışı
+```bash
+flutter pub get
+```
+
+3. Drift kod üretimini çalıştırın (gerekirse):
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+4. Firebase yapılandırmasını tamamlayın (aşağıya bakın).
+
+5. Uygulamayı çalıştırın:
+
+```bash
+flutter run
+```
+
+Android emülatör veya fiziksel cihaz önerilir. Web için ek Firebase Web uygulaması ve `AppConfig` ayarları gerekir.
+
+## Firebase yapılandırması
+
+1. [Firebase Console](https://console.firebase.google.com) üzerinde proje oluşturun.
+2. **Authentication** → E-posta/Parola ve Google sağlayıcılarını etkinleştirin.
+3. **Firestore Database** oluşturun (test modunda başlayıp kuralları üretime göre sıkılaştırın).
+4. FlutterFire CLI ile yapılandırın:
+
+```bash
+dart pub global activate flutterfire_cli
+flutterfire configure
+```
+
+Bu komut `lib/firebase_options.dart` dosyasını günceller.
+
+5. Android için `android/app/google-services.json` dosyasının mevcut olduğundan emin olun.
+6. Google Sign-In (Android) için SHA-1 parmak izini Firebase / Google Cloud OAuth istemcisine ekleyin.
+
+### Firestore veri yapısı
 
 ```
-Ekstre Yükle  →  YZ Analiz Eder  →  Dashboard  →  Koçla Sohbet
-     📄               ⚙️               📊              💬
+users/{userId}
+  ├── categories/{categoryId}
+  └── transactions/{transactionId}
 ```
 
----
+Her kullanıcının verisi kendi `userId` altında tutulur.
 
-## 🛠️ Teknoloji Yığını
+## Proje yapısı
 
 ```
-Frontend        →  Next.js 14 + Tailwind CSS
-Backend         →  FastAPI (Python)
-YZ / Koç        →  Anthropic ... API
-PDF İşleme      →  pdfplumber + tabula-py
-Veritabanı      →  PostgreSQL (Supabase)
-Auth            →  Supabase Auth
-E-posta         →  Resend API
-Hosting         →  Vercel + Railway
+lib/
+├── main.dart                 # Firebase, locale, Riverpod başlatma
+├── app.dart                  # MaterialApp, tema
+├── firebase_options.dart     # FlutterFire yapılandırması
+├── core/                     # Tema, provider'lar, yardımcılar
+├── domain/models/            # İşlem, kategori modelleri
+├── data/
+│   ├── local/                # Drift veritabanı
+│   ├── repositories/         # FinanceRepository (sync mantığı)
+│   └── mappers/
+└── features/
+    ├── auth/                 # Giriş, kayıt, AuthGate
+    ├── home/                 # Özet, analiz, takvim, ayarlar
+    ├── transactions/         # İşlem ekleme formu
+    └── categories/           # Kategori ekleme
 ```
----
 
-## 📄 Belgeler
+## Platform desteği
 
-- 📋 [MVP Kapsamı →](./MVP_SCOPE.md) — Hangi özellikler yapılıyor, hangileri sonraya bırakıldı, 6 haftalık takvim
-- 📐 [PRD →](./PRD.md) — Tüm ürün gereksinimleri, kullanıcı personaları, risk analizi, başarı metrikleri
+| Platform | Durum |
+|----------|--------|
+| Android | Birincil hedef, tam destek |
+| iOS | Flutter standart yapı mevcut |
+| Web | Kısıtlı; Google giriş için Web client ID gerekir (`lib/core/config/app_config.dart`) |
 
----
+## Geliştirme komutları
 
-## 🎯 Neden Bu Ürün?
+```bash
+flutter analyze          # Statik analiz
+flutter test             # Birim/widget testleri
+flutter build apk        # Debug/release APK
+```
 
-Türkiye'de finansal okuryazarlık araçları iki uçta takılı:
+## İlgili dokümanlar
 
-- 🏦 **Banka uygulamaları** → Veriyi gösterir, yönlendirmez
-- 👔 **Finansal danışmanlar** → Pahalı, büyük çoğunluğa ulaşmaz
+- [MVP_SCOPE.md](MVP_SCOPE.md) — MVP kapsamı ve teslim kriterleri
+- [PRD.md](PRD.md) — Ürün gereksinimleri ve kullanıcı hikâyeleri
 
-Bu aradaki boşluğu doldurmak için: herkesin erişebileceği, gerçekten konuşan bir koç.
+## Lisans
 
----
-
-## 🗓️ Geliştirme Takvimi
-
-- [x] Ürün fikri ve araştırma
-- [x] MVP kapsamı tanımlandı
-- [x] PRD yazıldı
-- [ ] PDF parse motoru
-- [ ] Dashboard UI
-- [ ] API entegrasyonu
-- [ ] Koçluk sohbet arayüzü
-- [ ] Kapalı beta lansmanı
-
----
-
-<p align="center">YZ Ürün Geliştirme Bootcamp — Nisan 2026</p>
+Bu proje özel kullanım içindir (`publish_to: 'none'`).

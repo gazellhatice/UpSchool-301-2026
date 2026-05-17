@@ -1,110 +1,156 @@
-# Kişisel Harcama Koçu — MVP Kapsamı
+# MVP Kapsamı — Kişisel Harcama Koçu
 
-## 🎯 Ürün Özeti
-
-**Kişisel Harcama Koçu**, kullanıcıların PDF banka ekstrelerini yükleyerek yapay zeka destekli kişisel bir finans koçuyla konuşmasını sağlayan bir web uygulamasıdır. Geleneksel PFM (kişisel finans yönetimi) araçlarının aksine, rakamları sadece göstermez; kullanıcıyla empati kurarak alışkanlık değişikliği önerir ve motivasyon sağlar.
+Bu belge, **Minimum Viable Product (MVP)** için neyin dahil edildiğini, neyin bilinçli olarak ertelendiğini ve teslim kriterlerini tanımlar. Kapsam, mevcut kod tabanıyla uyumludur.
 
 ---
 
-## 👤 Hedef Kullanıcı (MVP)
+## MVP hedefi
 
-- 22–35 yaş arası, aylık düzenli geliri olan çalışanlar
-- Harcamalarının nereye gittiğini merak eden ama spreadsheet açmaya üşünen kişiler
-- Finansal koçluğa ilgi duyan ama bütçesi olmayan bireyler
+Kullanıcının **hesabıyla giriş yapıp**, **gelir/gider kaydı oluşturarak**, **aylık özetini görmesini** ve **temel harcama analizini** yapmasını sağlayan, çevrimdışı da kullanılabilen bir mobil uygulama sunmak.
 
----
-
-## ✅ MVP Kapsamındaki Özellikler
-
-### 1. PDF Ekstre Yükleme
-- Kullanıcı, banka/kredi kartı ekstresini PDF olarak yükler
-- Desteklenen bankalar (MVP): Ziraat, Garanti, İş Bankası, Yapı Kredi formatları
-- Dosya boyutu limiti: 10 MB
-
-### 2. Otomatik Harcama Kategorilendirme
-- YZ, PDF'ten işlemleri çıkarır ve kategorilere ayırır
-- Kategoriler: Market, Yeme-İçme, Ulaşım, Eğlence, Fatura, Alışveriş, Sağlık, Diğer
-- Kullanıcı yanlış kategoriyi düzeltebilir (feedback loop)
-
-### 3. Özet Dashboard
-- Aylık toplam harcama
-- Kategori bazlı pasta grafiği
-- En yüksek 3 harcama kalemi
-- Geçen aya göre değişim (2. ekstre yüklendikten sonra)
-
-### 4. Konuşma Tabanlı Koçluk Arayüzü
-- Kullanıcı, YZ koçuyla chat arayüzü üzerinden konuşur
-- Koç, kullanıcıyı tanımlayan ve yargılamayan bir dil kullanır
-- Örnek koç mesajları:
-  - _"Bu ay yeme-içmeye geçen aya göre %40 daha fazla harcadın. Bir şeyler mi değişti?"_
-  - _"Market harcamaların gayet makul görünüyor, devam et!"_
-  - _"Streaming aboneliklerine toplam ₺850 gidiyor. Bunların hepsini aktif kullanıyor musun?"_
-
-### 5. Haftalık Özet Raporu (E-posta)
-- Kullanıcı e-posta adresi girerse haftalık harcama özeti gönderilir
-- Basit HTML e-posta: kategori dağılımı + koçtan 1 ipucu
+**Başarı tanımı:** Tek kullanıcı, bir ay boyunca işlemlerini ekleyebilir; özet, analiz ve takvim ekranları tutarlı veri gösterir; cihaz yeniden açıldığında veri kaybolmaz; internet geldiğinde bulutla eşitlenir.
 
 ---
 
-## 🚫 MVP Kapsamı Dışında (Sonraki Sürümler)
+## MVP kapsamında (dahil)
 
-| Özellik | Neden Dışarıda? |
-|---|---|
-| Banka API entegrasyonu (open banking) | Regülasyon karmaşıklığı |
-| Bütçe hedefi belirleme | Koçluk akışını karmaşıklaştırır |
-| Çoklu kullanıcı (aile/çift modu) | Veri izolasyonu zorlukları |
-| Yatırım takibi | Farklı bir kullanıcı kitlesi |
-| Mobil uygulama (iOS/Android) | PWA yeterli, native sonraya |
-| Türkçe NLP fine-tuning | Genel LLM yeterli MVP için |
+### 1. Kimlik ve oturum
+
+| Özellik | Durum |
+|---------|--------|
+| E-posta ile kayıt | ✅ |
+| E-posta ile giriş | ✅ |
+| Google ile giriş (Android / Web) | ✅ |
+| Şifre sıfırlama e-postası | ✅ |
+| Çıkış yapma | ✅ |
+| Kullanıcı profil dokümanı (`users/{uid}`) | ✅ |
+
+### 2. İşlem yönetimi
+
+| Özellik | Durum |
+|---------|--------|
+| Gelir / gider ekleme | ✅ |
+| Tutar, kategori, tarih, not | ✅ |
+| İşlem silme (özet listesinden) | ✅ |
+| Türk Lirası formatı (`₺`) | ✅ |
+
+### 3. Kategoriler
+
+| Özellik | Durum |
+|---------|--------|
+| İlk girişte varsayılan kategoriler (8 adet) | ✅ |
+| Özel kategori ekleme (ad, ikon, renk) | ✅ |
+| Gelir işleminde gelir kategorileri filtresi | ✅ |
+| Gider işleminde gider kategorileri filtresi | ✅ |
+
+**Varsayılan kategoriler:** Maaş, Ek Gelir, Yemek, Ulaşım, Kira, Eğlence, Sağlık, Diğer.
+
+### 4. Ana ekranlar (4 sekme)
+
+| Sekme | İçerik | Durum |
+|-------|--------|--------|
+| Özet | Net bakiye, gelir/gider, son 12 işlem, FAB ile işlem ekle | ✅ |
+| Analiz | Aylık gider pasta grafiği, kategori listesi | ✅ |
+| Takvim | Ay görünümü, seçilen günün işlemleri | ✅ |
+| Profil | Kullanıcı bilgisi, senkron, tema, kategoriler, çıkış | ✅ |
+
+### 5. Veri ve senkronizasyon
+
+| Özellik | Durum |
+|---------|--------|
+| Yerel SQLite (Drift) | ✅ |
+| Firestore push/pull | ✅ |
+| Çevrimdışı okuma/yazma | ✅ |
+| Manuel senkron butonu | ✅ |
+| `updatedAt` ile çakışma çözümü (son yazılan kazanır) | ✅ |
+
+### 6. UX / teknik
+
+| Özellik | Durum |
+|---------|--------|
+| Türkçe tarih/sayı formatı (`tr_TR`) | ✅ |
+| Açık / koyu tema | ✅ |
+| Splash + AuthGate akışı | ✅ |
+| Gradient / glass kart tasarım dili | ✅ |
 
 ---
 
-## 🛠️ Teknik Yığın (MVP)
+## MVP dışında (bilinçli ertelenen)
 
-| Katman | Teknoloji |
-|---|---|
-| Frontend | Next.js 14 + Tailwind CSS |
-| Backend | FastAPI (Python) |
-| YZ / LLM | Projeye uygunluğuna göre karar verilecektir |
-| PDF Parsing | pdfplumber + tabula-py |
-| Veritabanı | PostgreSQL (Supabase) |
-| Kimlik Doğrulama | Supabase Auth (e-posta + Google) |
-| Hosting | Vercel (frontend) + Railway (backend) |
-| E-posta | Resend API |
+Aşağıdakiler **MVP sonrası** değerlendirilir:
 
----
-
-## 📐 Kullanıcı Akışı (Happy Path)
-
-```
-1. Kullanıcı kaydolur (e-posta veya Google)
-      ↓
-2. PDF banka ekstresini yükler
-      ↓
-3. YZ işlemleri parse eder (~10-30 sn)
-      ↓
-4. Dashboard açılır: kategoriler + özet
-      ↓
-5. Koç, otomatik bir gözlemle sohbeti başlatır
-      ↓
-6. Kullanıcı koçla sohbet eder
-      ↓
-7. (Opsiyonel) Haftalık e-posta için abone olur
-```
+| Özellik | Gerekçe |
+|---------|---------|
+| İşlem düzenleme | MVP’de sil + yeniden ekle yeterli |
+| Bütçe / harcama limiti tanımlama | Özet ekranda sadece gelire göre kullanım yüzdesi var |
+| Tekrarlayan işlemler | Karmaşıklık artırır |
+| Çoklu para birimi | Tek para birimi (TRY) yeterli |
+| Banka / SMS / fiş OCR entegrasyonu | Kapsam dışı |
+| Bildirimler ve hatırlatıcılar | MVP odak: kayıt + görüntüleme |
+| Kategori silme / düzenleme | Sadece ekleme mevcut |
+| Aile / paylaşımlı hesap | Tek kullanıcı modeli |
+| Rapor dışa aktarma (PDF, CSV) | Sonraki faz |
+| Apple Sign-In | Sadece Google + e-posta |
+| Gelişmiş güvenlik (2FA, biyometrik kilit) | Sonraki faz |
+| Unit / entegrasyon test paketi | MVP manuel test ile doğrulanır |
 
 ---
 
+## Kabul kriterleri (MVP teslimi)
 
-## 🗓️ MVP Geliştirme Takvimi (6 Hafta)
+### Kimlik
 
-| Hafta | Görev |
-|---|---|
-| 1 | PDF parsing + kategori çıkarma motoru |
-| 2 | Dashboard UI + kategori düzenleme |
-| 3 | API entegrasyonu + koçluk prompt tasarımı |
-| 4 | Konuşma arayüzü + context yönetimi |
-| 5 | Kimlik doğrulama + veri saklama + e-posta |
-| 6 | Test, hata düzeltme, ilk kullanıcı lansmanı |
+- [ ] Yeni kullanıcı e-posta ile kayıt olup ana ekrana ulaşabiliyor.
+- [ ] Mevcut kullanıcı giriş yapıp oturumu koruyor (uygulama yeniden açılınca).
+- [ ] Google ile giriş Android’de çalışıyor (SHA-1 yapılandırılmış ortamda).
+
+### İşlemler
+
+- [ ] Gider işlemi eklendiğinde özet ekranında gider ve bakiye güncelleniyor.
+- [ ] Gelir işlemi eklendiğinde net bakiye artıyor.
+- [ ] İşlem silindiğinde listeden ve özetten kalkıyor.
+
+### Görselleştirme
+
+- [ ] En az bir gider kategorisi varken analiz sekmesinde pasta grafik görünüyor.
+- [ ] Takvimde işlem olan gün seçildiğinde o güne ait kayıtlar listeleniyor.
+
+### Veri dayanıklılığı
+
+- [ ] Uçak modunda işlem eklenebiliyor; uygulama kapanıp açılınca veri duruyor.
+- [ ] İnternet açıldığında manuel senkron veya otomatik push ile Firestore’da kayıt oluşuyor.
+
+### Ayarlar
+
+- [ ] Tema değişimi kalıcı (SharedPreferences).
+- [ ] Yeni kategori eklenebiliyor ve işlem formunda seçilebiliyor.
 
 ---
 
+## MVP sınırları ve bilinen kısıtlar
+
+- **Ay seçici:** Özet/analiz şu an `selectedMonthProvider` ile ay destekler; UI’da ay değiştirme her ekranda görünür olmayabilir — MVP’de mevcut ay odaklı kullanım yeterli kabul edilir.
+- **Senkron:** Tam çift yönlü gerçek zamanlı dinleyici yok; periyodik/manuel sync modeli.
+- **Güvenlik kuralları:** Firestore kuralları geliştirici sorumluluğunda; üretimde `users/{userId}` yalnızca sahibine açık olmalı.
+- **Web:** İkincil platform; mobil öncelikli test.
+
+---
+
+## Sonraki faz önerisi (post-MVP)
+
+1. İşlem düzenleme + kategori düzenleme/silme  
+2. Aylık bütçe hedefi ve uyarılar  
+3. Ay/yıl filtre UI’si (tüm sekmelerde tutarlı)  
+4. Firestore security rules + otomatik sync iyileştirmesi  
+5. Widget / bildirim (günlük hatırlatma)  
+6. Test coverage ve CI pipeline  
+
+---
+
+## Sürüm
+
+| Alan | Değer |
+|------|--------|
+| MVP sürümü | 1.0.0 |
+| Son güncelleme | Mayıs 2026 |
+| Kod paketi | `kisisel_harcama_kocu_1` |
