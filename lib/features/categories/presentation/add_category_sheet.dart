@@ -2,18 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
+import 'package:kisisel_harcama_kocu_1/core/theme/app_palette.dart';
+import 'package:kisisel_harcama_kocu_1/data/repositories/finance_repository.dart';
+import 'package:kisisel_harcama_kocu_1/domain/models/category_item.dart';
 
 class AddCategorySheet extends ConsumerStatefulWidget {
-  const AddCategorySheet({super.key, required this.userId});
+  const AddCategorySheet({
+    super.key,
+    required this.userId,
+    this.category,
+  });
 
   final String userId;
+  final CategoryItem? category;
 
-  static Future<void> show(BuildContext context, String userId) {
+  static Future<void> show(
+    BuildContext context,
+    String userId, {
+    CategoryItem? category,
+  }) {
     return showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => AddCategorySheet(userId: userId),
+      builder: (_) => AddCategorySheet(userId: userId, category: category),
     );
   }
 
@@ -22,10 +34,13 @@ class AddCategorySheet extends ConsumerStatefulWidget {
 }
 
 class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
-  final _nameController = TextEditingController();
-  IconData _icon = Icons.label_rounded;
-  Color _color = AppColors.primary;
+  late final TextEditingController _nameController;
+  late IconData _icon;
+  late Color _color;
+  late bool _isIncome;
   bool _saving = false;
+
+  bool get _isEditing => widget.category != null;
 
   static const _iconOptions = [
     Icons.restaurant_rounded,
@@ -36,6 +51,8 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
     Icons.fitness_center_rounded,
     Icons.pets_rounded,
     Icons.card_giftcard_rounded,
+    Icons.payments_rounded,
+    Icons.laptop_mac_rounded,
   ];
 
   static const _colorOptions = [
@@ -48,6 +65,16 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    final c = widget.category;
+    _nameController = TextEditingController(text: c?.name ?? '');
+    _icon = c?.icon ?? Icons.label_rounded;
+    _color = c?.color ?? AppColors.primary;
+    _isIncome = c?.isIncome ?? false;
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
@@ -55,24 +82,51 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
 
   Future<void> _save() async {
     final name = _nameController.text.trim();
-    if (name.isEmpty) return;
+    if (name.isEmpty) {
+      _showError('Kategori adı gerekli.');
+      return;
+    }
 
     setState(() => _saving = true);
     try {
-      await ref.read(financeRepositoryProvider(widget.userId)).addCategory(
-            name: name,
-            icon: _icon,
-            color: _color,
-          );
+      final repo = ref.read(financeRepositoryProvider(widget.userId));
+      if (_isEditing) {
+        await repo.updateCategory(
+          id: widget.category!.id,
+          name: name,
+          icon: _icon,
+          color: _color,
+          isIncome: _isIncome,
+        );
+      } else {
+        await repo.addCategory(
+          name: name,
+          icon: _icon,
+          color: _color,
+          isIncome: _isIncome,
+        );
+      }
       if (mounted) Navigator.of(context).pop();
+    } on FinanceException catch (e) {
+      _showError(e.message);
+    } catch (e) {
+      _showError('Kayıt başarısız: $e');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
   }
 
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final isDefault = widget.category?.isDefault ?? false;
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),
@@ -80,16 +134,16 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: palette.surface,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: palette.border),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Yeni kategori',
+              _isEditing ? 'Kategoriyi düzenle' : 'Yeni kategori',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -97,30 +151,36 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
             const SizedBox(height: 16),
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Kategori adı'),
+              readOnly: isDefault,
+              decoration: InputDecoration(
+                labelText: 'Kategori adı',
+                helperText: isDefault ? 'Varsayılan kategorilerin adı değiştirilemez' : null,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SegmentedButton<bool>(
+              segments: const [
+                ButtonSegment(value: false, label: Text('Gider')),
+                ButtonSegment(value: true, label: Text('Gelir')),
+              ],
+              selected: {_isIncome},
+              onSelectionChanged: (v) => setState(() => _isIncome = v.first),
             ),
             const SizedBox(height: 16),
-            Text(
-              'İkon',
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
+            Text('İkon', style: Theme.of(context).textTheme.labelLarge),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               children: _iconOptions.map((icon) {
-                final selected = _icon == icon;
                 return ChoiceChip(
-                  selected: selected,
+                  selected: _icon == icon,
                   label: Icon(icon),
                   onSelected: (_) => setState(() => _icon = icon),
                 );
               }).toList(),
             ),
             const SizedBox(height: 16),
-            Text(
-              'Renk',
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
+            Text('Renk', style: Theme.of(context).textTheme.labelLarge),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -135,7 +195,7 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
                       color: color,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: selected ? Colors.white : Colors.transparent,
+                        color: selected ? palette.textPrimary : Colors.transparent,
                         width: 2,
                       ),
                     ),
@@ -146,7 +206,7 @@ class _AddCategorySheetState extends ConsumerState<AddCategorySheet> {
             const SizedBox(height: 24),
             FilledButton(
               onPressed: _saving ? null : _save,
-              child: Text(_saving ? 'Kaydediliyor...' : 'Kategori ekle'),
+              child: Text(_saving ? 'Kaydediliyor...' : (_isEditing ? 'Güncelle' : 'Kategori ekle')),
             ),
           ],
         ),

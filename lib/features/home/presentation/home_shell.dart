@@ -45,7 +45,7 @@ class _HomeShellState extends State<HomeShell> {
             ],
           ),
         ),
-        floatingActionButton: _index == 0
+        floatingActionButton: _index == 0 || _index == 2
             ? FloatingActionButton.extended(
                 onPressed: () =>
                     TransactionFormSheet.show(context, widget.user.uid),

@@ -9,6 +9,14 @@ import 'package:kisisel_harcama_kocu_1/domain/models/category_item.dart';
 import 'package:kisisel_harcama_kocu_1/domain/models/transaction_item.dart';
 import 'package:kisisel_harcama_kocu_1/domain/models/transaction_type.dart';
 
+class FinanceException implements Exception {
+  const FinanceException(this.message);
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 class MonthSummary {
   const MonthSummary({
     required this.income,
@@ -21,6 +29,10 @@ class MonthSummary {
   final List<TransactionItem> transactions;
 
   double get balance => income - expense;
+
+  Set<DateTime> get daysWithTransactions => transactions
+      .map((t) => DateTime(t.date.year, t.date.month, t.date.day))
+      .toSet();
 }
 
 class CategoryStat {
@@ -33,6 +45,18 @@ class CategoryStat {
   final CategoryItem category;
   final double amount;
   final double percent;
+}
+
+class SyncResult {
+  const SyncResult({
+    required this.success,
+    required this.wasOnline,
+    this.error,
+  });
+
+  final bool success;
+  final bool wasOnline;
+  final String? error;
 }
 
 class FinanceRepository {
@@ -96,34 +120,52 @@ class FinanceRepository {
   }
 
   Stream<List<CategoryStat>> watchExpenseStats(DateTime month) {
-    return watchMonthSummary(month).map((summary) {
+    return watchMonthSummary(month).asyncMap((summary) async {
       final expenses = summary.transactions.where((t) => !t.isIncome);
       final total = summary.expense;
       if (total <= 0) return <CategoryStat>[];
 
+      final allCategories = await _db.getCategoriesForUser(_userId);
+      final categoryById = {
+        for (final c in allCategories) c.id: c.toDomain(),
+      };
+      CategoryItem fallback;
+      try {
+        fallback = categoryById.values.firstWhere((c) => c.name == 'Diğer');
+      } catch (_) {
+        fallback = categoryById.values.isNotEmpty
+            ? categoryById.values.first
+            : CategoryItem(
+                id: 'unknown',
+                userId: _userId,
+                name: 'Diğer',
+                iconCodePoint: Icons.more_horiz_rounded.codePoint,
+                colorValue: 0xFF9AA3B8,
+                isDefault: true,
+                isIncome: false,
+                synced: true,
+                updatedAt: DateTime.now(),
+              );
+      }
+
       final map = <String, double>{};
-      final categories = <String, CategoryItem>{};
       for (final tx in expenses) {
         map[tx.categoryId] = (map[tx.categoryId] ?? 0) + tx.amount;
-        if (tx.category != null) {
-          categories[tx.categoryId] = tx.category!;
-        }
       }
 
       return map.entries.map((entry) {
-        final category = categories[entry.key];
-        if (category == null) return null;
+        final category = categoryById[entry.key] ?? fallback;
         return CategoryStat(
           category: category,
           amount: entry.value,
           percent: (entry.value / total) * 100,
         );
-      }).whereType<CategoryStat>().toList()
+      }).toList()
         ..sort((a, b) => b.amount.compareTo(a.amount));
     });
   }
 
-  Future<void> initialize() async {
+  Future<SyncResult> initialize() async {
     final count = await (_db.selectOnly(_db.categories)
           ..addColumns([_db.categories.id.count()])
           ..where(_db.categories.userId.equals(_userId)))
@@ -134,8 +176,10 @@ class FinanceRepository {
       await _seedDefaultCategories();
     }
 
-    await sync();
+    return sync();
   }
+
+  Future<void> clearLocalUserData() => _db.clearUserData(_userId);
 
   Future<void> _seedDefaultCategories() async {
     final now = DateTime.now();
@@ -148,8 +192,9 @@ class FinanceRepository {
             userId: _userId,
             name: seed.name,
             iconCodePoint: seed.icon.codePoint,
-            colorValue: seed.color.value,
+            colorValue: seed.color.toARGB32(),
             isDefault: Value(seed.isDefault),
+            isIncome: Value(seed.isIncome),
             synced: const Value(false),
             updatedAt: now,
           ),
@@ -185,15 +230,48 @@ class FinanceRepository {
     await _trySync();
   }
 
+  Future<void> updateTransaction({
+    required String id,
+    required double amount,
+    required TransactionType type,
+    required String categoryId,
+    required DateTime date,
+    String note = '',
+  }) async {
+    final now = DateTime.now();
+    await (_db.update(_db.transactions)..where((t) => t.id.equals(id))).write(
+          TransactionsCompanion(
+            amount: Value(amount),
+            type: Value(type.value),
+            categoryId: Value(categoryId),
+            date: Value(date),
+            note: Value(note),
+            synced: const Value(false),
+            updatedAt: Value(now),
+          ),
+        );
+    await _trySync();
+  }
+
   Future<void> deleteTransaction(String id) async {
     await (_db.delete(_db.transactions)..where((t) => t.id.equals(id))).go();
 
+    var remoteDeleted = false;
     if (await _isOnline()) {
       try {
         await _transactionsRef.doc(id).delete();
-      } catch (_) {
-        // Offline veya ağ hatası — yerel silme yeterli.
-      }
+        remoteDeleted = true;
+      } catch (_) {}
+    }
+
+    if (!remoteDeleted) {
+      await _db.into(_db.pendingDeletes).insertOnConflictUpdate(
+            PendingDeletesCompanion.insert(
+              id: id,
+              userId: _userId,
+              collection: 'transactions',
+            ),
+          );
     }
   }
 
@@ -201,6 +279,7 @@ class FinanceRepository {
     required String name,
     required IconData icon,
     required Color color,
+    required bool isIncome,
   }) async {
     final now = DateTime.now();
     await _db.into(_db.categories).insert(
@@ -209,8 +288,9 @@ class FinanceRepository {
             userId: _userId,
             name: name,
             iconCodePoint: icon.codePoint,
-            colorValue: color.value,
+            colorValue: color.toARGB32(),
             isDefault: const Value(false),
+            isIncome: Value(isIncome),
             synced: const Value(false),
             updatedAt: now,
           ),
@@ -218,10 +298,101 @@ class FinanceRepository {
     await _trySync();
   }
 
-  Future<void> sync() async {
-    if (!await _isOnline()) return;
-    await _pullRemote();
-    await _pushLocal();
+  Future<void> updateCategory({
+    required String id,
+    required String name,
+    required IconData icon,
+    required Color color,
+    required bool isIncome,
+  }) async {
+    final existing = await (_db.select(_db.categories)
+          ..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+    if (existing == null) {
+      throw const FinanceException('Kategori bulunamadı.');
+    }
+    if (existing.isDefault && existing.name != name) {
+      throw const FinanceException('Varsayılan kategorilerin adı değiştirilemez.');
+    }
+
+    final now = DateTime.now();
+    await (_db.update(_db.categories)..where((t) => t.id.equals(id))).write(
+          CategoriesCompanion(
+            name: Value(name),
+            iconCodePoint: Value(icon.codePoint),
+            colorValue: Value(color.toARGB32()),
+            isIncome: Value(isIncome),
+            synced: const Value(false),
+            updatedAt: Value(now),
+          ),
+        );
+    await _trySync();
+  }
+
+  Future<void> deleteCategory(String id) async {
+    final existing = await (_db.select(_db.categories)
+          ..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+    if (existing == null) return;
+    if (existing.isDefault) {
+      throw const FinanceException('Varsayılan kategoriler silinemez.');
+    }
+
+    final fallback = await (_db.select(_db.categories)
+          ..where(
+            (t) => t.userId.equals(_userId) & t.name.equals('Diğer'),
+          ))
+        .getSingleOrNull();
+    if (fallback == null) {
+      throw const FinanceException('"Diğer" kategorisi bulunamadı.');
+    }
+
+    await (_db.update(_db.transactions)
+          ..where((t) => t.categoryId.equals(id)))
+        .write(
+          TransactionsCompanion(
+            categoryId: Value(fallback.id),
+            synced: const Value(false),
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
+
+    await (_db.delete(_db.categories)..where((t) => t.id.equals(id))).go();
+
+    var remoteDeleted = false;
+    if (await _isOnline()) {
+      try {
+        await _categoriesRef.doc(id).delete();
+        remoteDeleted = true;
+      } catch (_) {}
+    }
+
+    if (!remoteDeleted) {
+      await _db.into(_db.pendingDeletes).insertOnConflictUpdate(
+            PendingDeletesCompanion.insert(
+              id: id,
+              userId: _userId,
+              collection: 'categories',
+            ),
+          );
+    }
+
+    await _trySync();
+  }
+
+  Future<SyncResult> sync() async {
+    if (!await _isOnline()) {
+      return const SyncResult(success: false, wasOnline: false);
+    }
+
+    try {
+      await _processPendingDeletes();
+      await _pullRemote();
+      await _pushLocal();
+      return const SyncResult(success: true, wasOnline: true);
+    } catch (e) {
+      return SyncResult(success: false, wasOnline: true, error: e.toString());
+    }
   }
 
   Future<void> _trySync() async {
@@ -235,6 +406,24 @@ class FinanceRepository {
     return !result.contains(ConnectivityResult.none);
   }
 
+  Future<void> _processPendingDeletes() async {
+    final pending = await _db.getPendingDeletes(_userId);
+    for (final item in pending) {
+      try {
+        if (item.collection == 'transactions') {
+          await _transactionsRef.doc(item.id).delete();
+        } else if (item.collection == 'categories') {
+          await _categoriesRef.doc(item.id).delete();
+        }
+        await (_db.delete(_db.pendingDeletes)
+              ..where((t) => t.id.equals(item.id)))
+            .go();
+      } catch (_) {
+        // Sonraki sync'te tekrar denenecek.
+      }
+    }
+  }
+
   Future<void> _pushLocal() async {
     final unsyncedCategories = await _db.getUnsyncedCategories(_userId);
     for (final category in unsyncedCategories) {
@@ -243,14 +432,14 @@ class FinanceRepository {
         'iconCodePoint': category.iconCodePoint,
         'colorValue': category.colorValue,
         'isDefault': category.isDefault,
+        'isIncome': category.isIncome,
         'updatedAt': Timestamp.fromDate(category.updatedAt),
       });
       await (_db.update(_db.categories)..where((t) => t.id.equals(category.id)))
           .write(const CategoriesCompanion(synced: Value(true)));
     }
 
-    final unsyncedTransactions =
-        await _db.getUnsyncedTransactions(_userId);
+    final unsyncedTransactions = await _db.getUnsyncedTransactions(_userId);
     for (final row in unsyncedTransactions) {
       final tx = row.transaction;
       await _transactionsRef.doc(tx.id).set({
@@ -273,6 +462,11 @@ class FinanceRepository {
       final updatedAt =
           (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now();
 
+      final pending = await (_db.select(_db.pendingDeletes)
+            ..where((t) => t.id.equals(doc.id)))
+          .getSingleOrNull();
+      if (pending != null) continue;
+
       final existing = await (_db.select(_db.categories)
             ..where((t) => t.id.equals(doc.id)))
           .getSingleOrNull();
@@ -283,10 +477,12 @@ class FinanceRepository {
                 id: Value(doc.id),
                 userId: Value(_userId),
                 name: Value(data['name'] as String? ?? 'Diğer'),
-                iconCodePoint:
-                    Value(data['iconCodePoint'] as int? ?? Icons.category.codePoint),
+                iconCodePoint: Value(
+                  data['iconCodePoint'] as int? ?? Icons.category.codePoint,
+                ),
                 colorValue: Value(data['colorValue'] as int? ?? 0xFF9AA3B8),
                 isDefault: Value(data['isDefault'] as bool? ?? false),
+                isIncome: Value(data['isIncome'] as bool? ?? false),
                 synced: const Value(true),
                 updatedAt: Value(updatedAt),
               ),
@@ -300,6 +496,14 @@ class FinanceRepository {
       final updatedAt =
           (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now();
 
+      final pending = await (_db.select(_db.pendingDeletes)
+            ..where((t) => t.id.equals(doc.id)))
+          .getSingleOrNull();
+      if (pending != null) continue;
+
+      final dateTs = data['date'];
+      if (dateTs is! Timestamp) continue;
+
       final existing = await (_db.select(_db.transactions)
             ..where((t) => t.id.equals(doc.id)))
           .getSingleOrNull();
@@ -309,10 +513,10 @@ class FinanceRepository {
               TransactionsCompanion(
                 id: Value(doc.id),
                 userId: Value(_userId),
-                amount: Value((data['amount'] as num).toDouble()),
+                amount: Value((data['amount'] as num?)?.toDouble() ?? 0),
                 type: Value(data['type'] as int? ?? 0),
-                categoryId: Value(data['categoryId'] as String),
-                date: Value((data['date'] as Timestamp).toDate()),
+                categoryId: Value(data['categoryId'] as String? ?? ''),
+                date: Value(dateTs.toDate()),
                 note: Value(data['note'] as String? ?? ''),
                 synced: const Value(true),
                 updatedAt: Value(updatedAt),

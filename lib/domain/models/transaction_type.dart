@@ -6,7 +6,10 @@ enum TransactionType {
   final int value;
 
   static TransactionType fromValue(int value) {
-    return TransactionType.values.firstWhere((e) => e.value == value);
+    return TransactionType.values.firstWhere(
+      (e) => e.value == value,
+      orElse: () => TransactionType.expense,
+    );
   }
 
   bool get isIncome => this == TransactionType.income;

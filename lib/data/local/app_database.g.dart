@@ -46,6 +46,16 @@ class $CategoriesTable extends Categories
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("is_default" IN (0, 1))'),
       defaultValue: const Constant(false));
+  static const VerificationMeta _isIncomeMeta =
+      const VerificationMeta('isIncome');
+  @override
+  late final GeneratedColumn<bool> isIncome = GeneratedColumn<bool>(
+      'is_income', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_income" IN (0, 1))'),
+      defaultValue: const Constant(false));
   static const VerificationMeta _syncedMeta = const VerificationMeta('synced');
   @override
   late final GeneratedColumn<bool> synced = GeneratedColumn<bool>(
@@ -69,6 +79,7 @@ class $CategoriesTable extends Categories
         iconCodePoint,
         colorValue,
         isDefault,
+        isIncome,
         synced,
         updatedAt
       ];
@@ -119,6 +130,10 @@ class $CategoriesTable extends Categories
       context.handle(_isDefaultMeta,
           isDefault.isAcceptableOrUnknown(data['is_default']!, _isDefaultMeta));
     }
+    if (data.containsKey('is_income')) {
+      context.handle(_isIncomeMeta,
+          isIncome.isAcceptableOrUnknown(data['is_income']!, _isIncomeMeta));
+    }
     if (data.containsKey('synced')) {
       context.handle(_syncedMeta,
           synced.isAcceptableOrUnknown(data['synced']!, _syncedMeta));
@@ -150,6 +165,8 @@ class $CategoriesTable extends Categories
           .read(DriftSqlType.int, data['${effectivePrefix}color_value'])!,
       isDefault: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_default'])!,
+      isIncome: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_income'])!,
       synced: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}synced'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -170,6 +187,7 @@ class Category extends DataClass implements Insertable<Category> {
   final int iconCodePoint;
   final int colorValue;
   final bool isDefault;
+  final bool isIncome;
   final bool synced;
   final DateTime updatedAt;
   const Category(
@@ -179,6 +197,7 @@ class Category extends DataClass implements Insertable<Category> {
       required this.iconCodePoint,
       required this.colorValue,
       required this.isDefault,
+      required this.isIncome,
       required this.synced,
       required this.updatedAt});
   @override
@@ -190,6 +209,7 @@ class Category extends DataClass implements Insertable<Category> {
     map['icon_code_point'] = Variable<int>(iconCodePoint);
     map['color_value'] = Variable<int>(colorValue);
     map['is_default'] = Variable<bool>(isDefault);
+    map['is_income'] = Variable<bool>(isIncome);
     map['synced'] = Variable<bool>(synced);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -203,6 +223,7 @@ class Category extends DataClass implements Insertable<Category> {
       iconCodePoint: Value(iconCodePoint),
       colorValue: Value(colorValue),
       isDefault: Value(isDefault),
+      isIncome: Value(isIncome),
       synced: Value(synced),
       updatedAt: Value(updatedAt),
     );
@@ -218,6 +239,7 @@ class Category extends DataClass implements Insertable<Category> {
       iconCodePoint: serializer.fromJson<int>(json['iconCodePoint']),
       colorValue: serializer.fromJson<int>(json['colorValue']),
       isDefault: serializer.fromJson<bool>(json['isDefault']),
+      isIncome: serializer.fromJson<bool>(json['isIncome']),
       synced: serializer.fromJson<bool>(json['synced']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -232,6 +254,7 @@ class Category extends DataClass implements Insertable<Category> {
       'iconCodePoint': serializer.toJson<int>(iconCodePoint),
       'colorValue': serializer.toJson<int>(colorValue),
       'isDefault': serializer.toJson<bool>(isDefault),
+      'isIncome': serializer.toJson<bool>(isIncome),
       'synced': serializer.toJson<bool>(synced),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -244,6 +267,7 @@ class Category extends DataClass implements Insertable<Category> {
           int? iconCodePoint,
           int? colorValue,
           bool? isDefault,
+          bool? isIncome,
           bool? synced,
           DateTime? updatedAt}) =>
       Category(
@@ -253,6 +277,7 @@ class Category extends DataClass implements Insertable<Category> {
         iconCodePoint: iconCodePoint ?? this.iconCodePoint,
         colorValue: colorValue ?? this.colorValue,
         isDefault: isDefault ?? this.isDefault,
+        isIncome: isIncome ?? this.isIncome,
         synced: synced ?? this.synced,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -267,6 +292,7 @@ class Category extends DataClass implements Insertable<Category> {
       colorValue:
           data.colorValue.present ? data.colorValue.value : this.colorValue,
       isDefault: data.isDefault.present ? data.isDefault.value : this.isDefault,
+      isIncome: data.isIncome.present ? data.isIncome.value : this.isIncome,
       synced: data.synced.present ? data.synced.value : this.synced,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -281,6 +307,7 @@ class Category extends DataClass implements Insertable<Category> {
           ..write('iconCodePoint: $iconCodePoint, ')
           ..write('colorValue: $colorValue, ')
           ..write('isDefault: $isDefault, ')
+          ..write('isIncome: $isIncome, ')
           ..write('synced: $synced, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -289,7 +316,7 @@ class Category extends DataClass implements Insertable<Category> {
 
   @override
   int get hashCode => Object.hash(id, userId, name, iconCodePoint, colorValue,
-      isDefault, synced, updatedAt);
+      isDefault, isIncome, synced, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -300,6 +327,7 @@ class Category extends DataClass implements Insertable<Category> {
           other.iconCodePoint == this.iconCodePoint &&
           other.colorValue == this.colorValue &&
           other.isDefault == this.isDefault &&
+          other.isIncome == this.isIncome &&
           other.synced == this.synced &&
           other.updatedAt == this.updatedAt);
 }
@@ -311,6 +339,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<int> iconCodePoint;
   final Value<int> colorValue;
   final Value<bool> isDefault;
+  final Value<bool> isIncome;
   final Value<bool> synced;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -321,6 +350,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     this.iconCodePoint = const Value.absent(),
     this.colorValue = const Value.absent(),
     this.isDefault = const Value.absent(),
+    this.isIncome = const Value.absent(),
     this.synced = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -332,6 +362,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     required int iconCodePoint,
     required int colorValue,
     this.isDefault = const Value.absent(),
+    this.isIncome = const Value.absent(),
     this.synced = const Value.absent(),
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -348,6 +379,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     Expression<int>? iconCodePoint,
     Expression<int>? colorValue,
     Expression<bool>? isDefault,
+    Expression<bool>? isIncome,
     Expression<bool>? synced,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -359,6 +391,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       if (iconCodePoint != null) 'icon_code_point': iconCodePoint,
       if (colorValue != null) 'color_value': colorValue,
       if (isDefault != null) 'is_default': isDefault,
+      if (isIncome != null) 'is_income': isIncome,
       if (synced != null) 'synced': synced,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -372,6 +405,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       Value<int>? iconCodePoint,
       Value<int>? colorValue,
       Value<bool>? isDefault,
+      Value<bool>? isIncome,
       Value<bool>? synced,
       Value<DateTime>? updatedAt,
       Value<int>? rowid}) {
@@ -382,6 +416,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
       iconCodePoint: iconCodePoint ?? this.iconCodePoint,
       colorValue: colorValue ?? this.colorValue,
       isDefault: isDefault ?? this.isDefault,
+      isIncome: isIncome ?? this.isIncome,
       synced: synced ?? this.synced,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -409,6 +444,9 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     if (isDefault.present) {
       map['is_default'] = Variable<bool>(isDefault.value);
     }
+    if (isIncome.present) {
+      map['is_income'] = Variable<bool>(isIncome.value);
+    }
     if (synced.present) {
       map['synced'] = Variable<bool>(synced.value);
     }
@@ -430,6 +468,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
           ..write('iconCodePoint: $iconCodePoint, ')
           ..write('colorValue: $colorValue, ')
           ..write('isDefault: $isDefault, ')
+          ..write('isIncome: $isIncome, ')
           ..write('synced: $synced, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -896,17 +935,249 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   }
 }
 
+class $PendingDeletesTable extends PendingDeletes
+    with TableInfo<$PendingDeletesTable, PendingDelete> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PendingDeletesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+      'user_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _collectionMeta =
+      const VerificationMeta('collection');
+  @override
+  late final GeneratedColumn<String> collection = GeneratedColumn<String>(
+      'collection', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, userId, collection];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pending_deletes';
+  @override
+  VerificationContext validateIntegrity(Insertable<PendingDelete> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(_userIdMeta,
+          userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta));
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('collection')) {
+      context.handle(
+          _collectionMeta,
+          collection.isAcceptableOrUnknown(
+              data['collection']!, _collectionMeta));
+    } else if (isInserting) {
+      context.missing(_collectionMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PendingDelete map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PendingDelete(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      userId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}user_id'])!,
+      collection: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}collection'])!,
+    );
+  }
+
+  @override
+  $PendingDeletesTable createAlias(String alias) {
+    return $PendingDeletesTable(attachedDatabase, alias);
+  }
+}
+
+class PendingDelete extends DataClass implements Insertable<PendingDelete> {
+  final String id;
+  final String userId;
+  final String collection;
+  const PendingDelete(
+      {required this.id, required this.userId, required this.collection});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['collection'] = Variable<String>(collection);
+    return map;
+  }
+
+  PendingDeletesCompanion toCompanion(bool nullToAbsent) {
+    return PendingDeletesCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      collection: Value(collection),
+    );
+  }
+
+  factory PendingDelete.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PendingDelete(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      collection: serializer.fromJson<String>(json['collection']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'collection': serializer.toJson<String>(collection),
+    };
+  }
+
+  PendingDelete copyWith({String? id, String? userId, String? collection}) =>
+      PendingDelete(
+        id: id ?? this.id,
+        userId: userId ?? this.userId,
+        collection: collection ?? this.collection,
+      );
+  PendingDelete copyWithCompanion(PendingDeletesCompanion data) {
+    return PendingDelete(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      collection:
+          data.collection.present ? data.collection.value : this.collection,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PendingDelete(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('collection: $collection')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, userId, collection);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PendingDelete &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.collection == this.collection);
+}
+
+class PendingDeletesCompanion extends UpdateCompanion<PendingDelete> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> collection;
+  final Value<int> rowid;
+  const PendingDeletesCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.collection = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PendingDeletesCompanion.insert({
+    required String id,
+    required String userId,
+    required String collection,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        userId = Value(userId),
+        collection = Value(collection);
+  static Insertable<PendingDelete> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? collection,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (collection != null) 'collection': collection,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PendingDeletesCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? userId,
+      Value<String>? collection,
+      Value<int>? rowid}) {
+    return PendingDeletesCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      collection: collection ?? this.collection,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (collection.present) {
+      map['collection'] = Variable<String>(collection.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PendingDeletesCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('collection: $collection, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $CategoriesTable categories = $CategoriesTable(this);
   late final $TransactionsTable transactions = $TransactionsTable(this);
+  late final $PendingDeletesTable pendingDeletes = $PendingDeletesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [categories, transactions];
+      [categories, transactions, pendingDeletes];
 }
 
 typedef $$CategoriesTableCreateCompanionBuilder = CategoriesCompanion Function({
@@ -916,6 +1187,7 @@ typedef $$CategoriesTableCreateCompanionBuilder = CategoriesCompanion Function({
   required int iconCodePoint,
   required int colorValue,
   Value<bool> isDefault,
+  Value<bool> isIncome,
   Value<bool> synced,
   required DateTime updatedAt,
   Value<int> rowid,
@@ -927,6 +1199,7 @@ typedef $$CategoriesTableUpdateCompanionBuilder = CategoriesCompanion Function({
   Value<int> iconCodePoint,
   Value<int> colorValue,
   Value<bool> isDefault,
+  Value<bool> isIncome,
   Value<bool> synced,
   Value<DateTime> updatedAt,
   Value<int> rowid,
@@ -978,6 +1251,9 @@ class $$CategoriesTableFilterComposer
 
   ColumnFilters<bool> get isDefault => $composableBuilder(
       column: $table.isDefault, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isIncome => $composableBuilder(
+      column: $table.isIncome, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<bool> get synced => $composableBuilder(
       column: $table.synced, builder: (column) => ColumnFilters(column));
@@ -1035,6 +1311,9 @@ class $$CategoriesTableOrderingComposer
   ColumnOrderings<bool> get isDefault => $composableBuilder(
       column: $table.isDefault, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<bool> get isIncome => $composableBuilder(
+      column: $table.isIncome, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<bool> get synced => $composableBuilder(
       column: $table.synced, builder: (column) => ColumnOrderings(column));
 
@@ -1068,6 +1347,9 @@ class $$CategoriesTableAnnotationComposer
 
   GeneratedColumn<bool> get isDefault =>
       $composableBuilder(column: $table.isDefault, builder: (column) => column);
+
+  GeneratedColumn<bool> get isIncome =>
+      $composableBuilder(column: $table.isIncome, builder: (column) => column);
 
   GeneratedColumn<bool> get synced =>
       $composableBuilder(column: $table.synced, builder: (column) => column);
@@ -1126,6 +1408,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
             Value<int> iconCodePoint = const Value.absent(),
             Value<int> colorValue = const Value.absent(),
             Value<bool> isDefault = const Value.absent(),
+            Value<bool> isIncome = const Value.absent(),
             Value<bool> synced = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -1137,6 +1420,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
             iconCodePoint: iconCodePoint,
             colorValue: colorValue,
             isDefault: isDefault,
+            isIncome: isIncome,
             synced: synced,
             updatedAt: updatedAt,
             rowid: rowid,
@@ -1148,6 +1432,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
             required int iconCodePoint,
             required int colorValue,
             Value<bool> isDefault = const Value.absent(),
+            Value<bool> isIncome = const Value.absent(),
             Value<bool> synced = const Value.absent(),
             required DateTime updatedAt,
             Value<int> rowid = const Value.absent(),
@@ -1159,6 +1444,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
             iconCodePoint: iconCodePoint,
             colorValue: colorValue,
             isDefault: isDefault,
+            isIncome: isIncome,
             synced: synced,
             updatedAt: updatedAt,
             rowid: rowid,
@@ -1543,6 +1829,150 @@ typedef $$TransactionsTableProcessedTableManager = ProcessedTableManager<
     (Transaction, $$TransactionsTableReferences),
     Transaction,
     PrefetchHooks Function({bool categoryId})>;
+typedef $$PendingDeletesTableCreateCompanionBuilder = PendingDeletesCompanion
+    Function({
+  required String id,
+  required String userId,
+  required String collection,
+  Value<int> rowid,
+});
+typedef $$PendingDeletesTableUpdateCompanionBuilder = PendingDeletesCompanion
+    Function({
+  Value<String> id,
+  Value<String> userId,
+  Value<String> collection,
+  Value<int> rowid,
+});
+
+class $$PendingDeletesTableFilterComposer
+    extends Composer<_$AppDatabase, $PendingDeletesTable> {
+  $$PendingDeletesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get collection => $composableBuilder(
+      column: $table.collection, builder: (column) => ColumnFilters(column));
+}
+
+class $$PendingDeletesTableOrderingComposer
+    extends Composer<_$AppDatabase, $PendingDeletesTable> {
+  $$PendingDeletesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get collection => $composableBuilder(
+      column: $table.collection, builder: (column) => ColumnOrderings(column));
+}
+
+class $$PendingDeletesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PendingDeletesTable> {
+  $$PendingDeletesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get collection => $composableBuilder(
+      column: $table.collection, builder: (column) => column);
+}
+
+class $$PendingDeletesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $PendingDeletesTable,
+    PendingDelete,
+    $$PendingDeletesTableFilterComposer,
+    $$PendingDeletesTableOrderingComposer,
+    $$PendingDeletesTableAnnotationComposer,
+    $$PendingDeletesTableCreateCompanionBuilder,
+    $$PendingDeletesTableUpdateCompanionBuilder,
+    (
+      PendingDelete,
+      BaseReferences<_$AppDatabase, $PendingDeletesTable, PendingDelete>
+    ),
+    PendingDelete,
+    PrefetchHooks Function()> {
+  $$PendingDeletesTableTableManager(
+      _$AppDatabase db, $PendingDeletesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PendingDeletesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PendingDeletesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PendingDeletesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> userId = const Value.absent(),
+            Value<String> collection = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              PendingDeletesCompanion(
+            id: id,
+            userId: userId,
+            collection: collection,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String userId,
+            required String collection,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              PendingDeletesCompanion.insert(
+            id: id,
+            userId: userId,
+            collection: collection,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$PendingDeletesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $PendingDeletesTable,
+    PendingDelete,
+    $$PendingDeletesTableFilterComposer,
+    $$PendingDeletesTableOrderingComposer,
+    $$PendingDeletesTableAnnotationComposer,
+    $$PendingDeletesTableCreateCompanionBuilder,
+    $$PendingDeletesTableUpdateCompanionBuilder,
+    (
+      PendingDelete,
+      BaseReferences<_$AppDatabase, $PendingDeletesTable, PendingDelete>
+    ),
+    PendingDelete,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1551,4 +1981,6 @@ class $AppDatabaseManager {
       $$CategoriesTableTableManager(_db, _db.categories);
   $$TransactionsTableTableManager get transactions =>
       $$TransactionsTableTableManager(_db, _db.transactions);
+  $$PendingDeletesTableTableManager get pendingDeletes =>
+      $$PendingDeletesTableTableManager(_db, _db.pendingDeletes);
 }

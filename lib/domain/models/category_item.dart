@@ -8,6 +8,7 @@ class CategoryItem {
     required this.iconCodePoint,
     required this.colorValue,
     required this.isDefault,
+    required this.isIncome,
     required this.synced,
     required this.updatedAt,
   });
@@ -18,6 +19,7 @@ class CategoryItem {
   final int iconCodePoint;
   final int colorValue;
   final bool isDefault;
+  final bool isIncome;
   final bool synced;
   final DateTime updatedAt;
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
+import 'package:kisisel_harcama_kocu_1/core/theme/app_palette.dart';
 import 'package:kisisel_harcama_kocu_1/core/widgets/gradient_background.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -8,6 +8,7 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final palette = context.palette;
 
     return GradientBackground(
       child: Scaffold(
@@ -16,26 +17,13 @@ class SplashScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 88,
-                height: 88,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
-                  gradient: const LinearGradient(
-                    colors: AppColors.gradientCard,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.45),
-                      blurRadius: 32,
-                      offset: const Offset(0, 12),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.auto_graph_rounded,
-                  color: Colors.white,
-                  size: 44,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(28),
+                child: Image.asset(
+                  'assets/images/splash_logo.png',
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.cover,
                 ),
               ),
               const SizedBox(height: 28),
@@ -50,7 +38,7 @@ class SplashScreen extends StatelessWidget {
               Text(
                 'Finansal hedeflerine akıllıca ulaş',
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: palette.textSecondary,
                 ),
               ),
               const SizedBox(height: 40),

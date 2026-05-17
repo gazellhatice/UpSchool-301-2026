@@ -130,6 +130,14 @@ flutter build apk        # Debug/release APK
 - [MVP_SCOPE.md](MVP_SCOPE.md) — MVP kapsamı ve teslim kriterleri
 - [PRD.md](PRD.md) — Ürün gereksinimleri ve kullanıcı hikâyeleri
 
+## Yayın öncesi kontrol listesi
+
+1. Firebase Console’da **Firestore kurallarını** deploy edin: `firebase deploy --only firestore:rules`
+2. `AppConstants` içindeki gizlilik URL ve destek e-postasını güncelleyin
+3. Android **release imzalama** (`android/app/build.gradle`) yapılandırın
+4. Uygulama ikonu `assets/images/splash_logo.png` üzerinden üretilir: `dart run flutter_launcher_icons`
+5. `flutter build appbundle` ile Play Store paketini oluşturun
+
 ## Lisans
 
 Bu proje özel kullanım içindir (`publish_to: 'none'`).

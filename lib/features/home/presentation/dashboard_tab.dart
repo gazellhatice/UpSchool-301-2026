@@ -4,9 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
+import 'package:kisisel_harcama_kocu_1/core/theme/app_palette.dart';
 import 'package:kisisel_harcama_kocu_1/core/utils/currency_format.dart';
+import 'package:kisisel_harcama_kocu_1/core/widgets/confirm_dialog.dart';
 import 'package:kisisel_harcama_kocu_1/core/widgets/glass_card.dart';
+import 'package:kisisel_harcama_kocu_1/core/widgets/month_selector.dart';
 import 'package:kisisel_harcama_kocu_1/domain/models/transaction_item.dart';
+import 'package:kisisel_harcama_kocu_1/features/transactions/presentation/transaction_form_sheet.dart';
 
 class DashboardTab extends ConsumerWidget {
   const DashboardTab({super.key, required this.user});
@@ -16,12 +20,12 @@ class DashboardTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final palette = context.palette;
     final month = ref.watch(selectedMonthProvider);
     final summaryAsync = ref.watch(
       monthSummaryProvider((userId: user.uid, month: month)),
     );
     final name = user.displayName?.split(' ').first ?? 'Kullanıcı';
-    final monthLabel = DateFormat('MMMM yyyy', 'tr_TR').format(month);
 
     return summaryAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -41,13 +45,8 @@ class DashboardTab extends ConsumerWidget {
                 letterSpacing: -0.6,
               ),
             ),
-            const SizedBox(height: 6),
-            Text(
-              monthLabel,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
+            const SizedBox(height: 12),
+            const MonthSelector(),
             const SizedBox(height: 20),
             _BalanceHeroCard(
               balance: summary.balance,
@@ -116,7 +115,7 @@ class DashboardTab extends ConsumerWidget {
                       'Sağ alttaki + ile ilk işlemini ekle.',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: palette.textSecondary,
                       ),
                     ),
                   ],
@@ -128,9 +127,23 @@ class DashboardTab extends ConsumerWidget {
                       padding: const EdgeInsets.only(bottom: 10),
                       child: _TransactionTile(
                         transaction: tx,
-                        onDelete: () => ref
-                            .read(financeRepositoryProvider(user.uid))
-                            .deleteTransaction(tx.id),
+                        onTap: () => TransactionFormSheet.show(
+                          context,
+                          user.uid,
+                          transaction: tx,
+                        ),
+                        onDelete: () async {
+                          final ok = await showConfirmDialog(
+                            context,
+                            title: 'İşlemi sil',
+                            message: 'Bu işlem kalıcı olarak silinecek.',
+                          );
+                          if (ok) {
+                            await ref
+                                .read(financeRepositoryProvider(user.uid))
+                                .deleteTransaction(tx.id);
+                          }
+                        },
                       ),
                     ),
                   ),
@@ -251,7 +264,7 @@ class _MiniStatCard extends StatelessWidget {
           Text(
             label,
             style: theme.textTheme.labelMedium?.copyWith(
-              color: AppColors.textSecondary,
+              color: context.palette.textSecondary,
             ),
           ),
           const SizedBox(height: 4),
@@ -270,15 +283,18 @@ class _MiniStatCard extends StatelessWidget {
 class _TransactionTile extends StatelessWidget {
   const _TransactionTile({
     required this.transaction,
+    required this.onTap,
     required this.onDelete,
   });
 
   final TransactionItem transaction;
-  final VoidCallback onDelete;
+  final VoidCallback onTap;
+  final Future<void> Function() onDelete;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final palette = context.palette;
     final category = transaction.category;
     final prefix = transaction.isIncome ? '+' : '-';
     final color = category?.color ?? AppColors.primary;
@@ -286,7 +302,10 @@ class _TransactionTile extends StatelessWidget {
 
     return GlassCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Row(
         children: [
           Container(
             width: 46,
@@ -311,7 +330,7 @@ class _TransactionTile extends StatelessWidget {
                 Text(
                   DateFormat('d MMM', 'tr_TR').format(transaction.date),
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: palette.textSecondary,
                   ),
                 ),
               ],
@@ -328,10 +347,11 @@ class _TransactionTile extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, size: 20),
-            color: AppColors.textSecondary,
+            color: palette.textSecondary,
             onPressed: onDelete,
           ),
         ],
+      ),
       ),
     );
   }

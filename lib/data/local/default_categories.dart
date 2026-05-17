@@ -7,12 +7,14 @@ class DefaultCategorySeed {
     required this.icon,
     required this.color,
     this.isDefault = true,
+    this.isIncome = false,
   });
 
   final String name;
   final IconData icon;
   final Color color;
   final bool isDefault;
+  final bool isIncome;
 }
 
 abstract final class DefaultCategories {
@@ -23,11 +25,13 @@ abstract final class DefaultCategories {
       name: 'Maaş',
       icon: Icons.payments_rounded,
       color: Color(0xFF3DDC97),
+      isIncome: true,
     ),
     DefaultCategorySeed(
       name: 'Ek Gelir',
       icon: Icons.laptop_mac_rounded,
       color: Color(0xFF7C4DFF),
+      isIncome: true,
     ),
     DefaultCategorySeed(
       name: 'Yemek',

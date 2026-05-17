@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
+import 'package:kisisel_harcama_kocu_1/core/providers/sync_status_provider.dart';
 import 'package:kisisel_harcama_kocu_1/features/auth/data/auth_service.dart';
 import 'package:kisisel_harcama_kocu_1/features/auth/presentation/splash_screen.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/home_shell.dart';
@@ -32,9 +33,12 @@ class _AuthenticatedHomeState extends ConsumerState<AuthenticatedHome> {
 
   Future<void> _initialize() async {
     try {
-      await ref
+      final syncResult = await ref
           .read(financeRepositoryProvider(widget.user.uid))
           .initialize();
+      if (syncResult.success) {
+        await ref.read(lastSyncAtProvider.notifier).markSynced();
+      }
       if (mounted) setState(() => _ready = true);
     } catch (e) {
       if (mounted) {

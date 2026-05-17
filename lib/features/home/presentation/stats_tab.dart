@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
+import 'package:kisisel_harcama_kocu_1/core/theme/app_palette.dart';
 import 'package:kisisel_harcama_kocu_1/core/utils/currency_format.dart';
 import 'package:kisisel_harcama_kocu_1/core/widgets/glass_card.dart';
+import 'package:kisisel_harcama_kocu_1/core/widgets/month_selector.dart';
 
 class StatsTab extends ConsumerWidget {
   const StatsTab({super.key, required this.userId});
@@ -14,6 +16,7 @@ class StatsTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final palette = context.palette;
     final month = ref.watch(selectedMonthProvider);
     final statsAsync = ref.watch(
       expenseStatsProvider((userId: userId, month: month)),
@@ -47,7 +50,7 @@ class StatsTab extends ConsumerWidget {
                     'Gider işlemi eklediğinde pasta grafik burada görünecek.',
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: palette.textSecondary,
                     ),
                   ),
                 ],
@@ -65,11 +68,13 @@ class StatsTab extends ConsumerWidget {
                 fontWeight: FontWeight.w800,
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 12),
+            const MonthSelector(),
+            const SizedBox(height: 8),
             Text(
               'Kategorilere göre aylık gider analizi',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
+                color: palette.textSecondary,
               ),
             ),
             const SizedBox(height: 24),

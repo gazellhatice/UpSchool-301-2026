@@ -25,6 +25,24 @@ class AuthGate extends ConsumerWidget {
           return const SplashScreen();
         }
 
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48),
+                    const SizedBox(height: 16),
+                    Text('Oturum yüklenemedi: ${snapshot.error}'),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
         final user = snapshot.data;
         if (user == null) {
           return AuthScreen(

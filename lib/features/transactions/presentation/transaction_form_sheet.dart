@@ -3,20 +3,33 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
-import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
+import 'package:kisisel_harcama_kocu_1/core/theme/app_palette.dart';
+import 'package:kisisel_harcama_kocu_1/domain/models/transaction_item.dart';
 import 'package:kisisel_harcama_kocu_1/domain/models/transaction_type.dart';
 
 class TransactionFormSheet extends ConsumerStatefulWidget {
-  const TransactionFormSheet({super.key, required this.userId});
+  const TransactionFormSheet({
+    super.key,
+    required this.userId,
+    this.transaction,
+  });
 
   final String userId;
+  final TransactionItem? transaction;
 
-  static Future<void> show(BuildContext context, String userId) {
+  static Future<void> show(
+    BuildContext context,
+    String userId, {
+    TransactionItem? transaction,
+  }) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => TransactionFormSheet(userId: userId),
+      builder: (_) => TransactionFormSheet(
+        userId: userId,
+        transaction: transaction,
+      ),
     );
   }
 
@@ -26,12 +39,27 @@ class TransactionFormSheet extends ConsumerStatefulWidget {
 }
 
 class _TransactionFormSheetState extends ConsumerState<TransactionFormSheet> {
-  final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
-  TransactionType _type = TransactionType.expense;
+  late final TextEditingController _amountController;
+  late final TextEditingController _noteController;
+  late TransactionType _type;
   String? _categoryId;
-  DateTime _date = DateTime.now();
+  late DateTime _date;
   bool _saving = false;
+
+  bool get _isEditing => widget.transaction != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final tx = widget.transaction;
+    _amountController = TextEditingController(
+      text: tx != null ? tx.amount.toString() : '',
+    );
+    _noteController = TextEditingController(text: tx?.note ?? '');
+    _type = tx?.type ?? TransactionType.expense;
+    _categoryId = tx?.categoryId;
+    _date = tx?.date ?? DateTime.now();
+  }
 
   @override
   void dispose() {
@@ -41,7 +69,8 @@ class _TransactionFormSheetState extends ConsumerState<TransactionFormSheet> {
   }
 
   Future<void> _save() async {
-    final amount = double.tryParse(_amountController.text.replaceAll(',', '.'));
+    final amount =
+        double.tryParse(_amountController.text.replaceAll(',', '.'));
     if (amount == null || amount <= 0) {
       _showError('Geçerli bir tutar gir.');
       return;
@@ -53,13 +82,25 @@ class _TransactionFormSheetState extends ConsumerState<TransactionFormSheet> {
 
     setState(() => _saving = true);
     try {
-      await ref.read(financeRepositoryProvider(widget.userId)).addTransaction(
-            amount: amount,
-            type: _type,
-            categoryId: _categoryId!,
-            date: _date,
-            note: _noteController.text.trim(),
-          );
+      final repo = ref.read(financeRepositoryProvider(widget.userId));
+      if (_isEditing) {
+        await repo.updateTransaction(
+          id: widget.transaction!.id,
+          amount: amount,
+          type: _type,
+          categoryId: _categoryId!,
+          date: _date,
+          note: _noteController.text.trim(),
+        );
+      } else {
+        await repo.addTransaction(
+          amount: amount,
+          type: _type,
+          categoryId: _categoryId!,
+          date: _date,
+          note: _noteController.text.trim(),
+        );
+      }
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       _showError('Kayıt başarısız: $e');
@@ -76,7 +117,7 @@ class _TransactionFormSheetState extends ConsumerState<TransactionFormSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final palette = context.palette;
     final categoriesAsync = ref.watch(categoriesProvider(widget.userId));
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
@@ -85,9 +126,9 @@ class _TransactionFormSheetState extends ConsumerState<TransactionFormSheet> {
       child: Container(
         margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: palette.surface,
           borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: palette.border),
         ),
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
@@ -100,17 +141,17 @@ class _TransactionFormSheetState extends ConsumerState<TransactionFormSheet> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.border,
+                    color: palette.border,
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
               ),
               const SizedBox(height: 16),
               Text(
-                'Yeni işlem',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+                _isEditing ? 'İşlemi düzenle' : 'Yeni işlem',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
               ),
               const SizedBox(height: 20),
               SegmentedButton<TransactionType>(
@@ -128,13 +169,17 @@ class _TransactionFormSheetState extends ConsumerState<TransactionFormSheet> {
                 ],
                 selected: {_type},
                 onSelectionChanged: (value) {
-                  setState(() => _type = value.first);
+                  setState(() {
+                    _type = value.first;
+                    _categoryId = null;
+                  });
                 },
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                 ],
@@ -148,16 +193,15 @@ class _TransactionFormSheetState extends ConsumerState<TransactionFormSheet> {
                 loading: () => const LinearProgressIndicator(),
                 error: (e, _) => Text('Kategoriler yüklenemedi: $e'),
                 data: (categories) {
-                  final filtered = categories.where((c) {
-                    if (_type.isIncome) {
-                      return c.name == 'Maaş' ||
-                          c.name == 'Ek Gelir' ||
-                          !c.isDefault ||
-                          c.name == 'Diğer';
-                    }
-                    return c.name != 'Maaş' && c.name != 'Ek Gelir';
-                  }).toList();
+                  final filtered = categories
+                      .where((c) => c.isIncome == _type.isIncome)
+                      .toList();
 
+                  if (_categoryId != null &&
+                      !filtered.any((c) => c.id == _categoryId)) {
+                    _categoryId =
+                        filtered.isNotEmpty ? filtered.first.id : null;
+                  }
                   _categoryId ??=
                       filtered.isNotEmpty ? filtered.first.id : null;
 
@@ -190,7 +234,8 @@ class _TransactionFormSheetState extends ConsumerState<TransactionFormSheet> {
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.calendar_today_rounded),
                 title: const Text('Tarih'),
-                subtitle: Text(DateFormat('d MMMM yyyy', 'tr_TR').format(_date)),
+                subtitle:
+                    Text(DateFormat('d MMMM yyyy', 'tr_TR').format(_date)),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () async {
                   final picked = await showDatePicker(
@@ -219,7 +264,7 @@ class _TransactionFormSheetState extends ConsumerState<TransactionFormSheet> {
                         width: 22,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Kaydet'),
+                    : Text(_isEditing ? 'Güncelle' : 'Kaydet'),
               ),
             ],
           ),

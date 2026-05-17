@@ -11,6 +11,7 @@ extension CategoryMapper on Category {
         iconCodePoint: iconCodePoint,
         colorValue: colorValue,
         isDefault: isDefault,
+        isIncome: isIncome,
         synced: synced,
         updatedAt: updatedAt,
       );
