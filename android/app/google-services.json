@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "290830664216",
+    "project_id": "kisisel-harcama-kocu",
+    "storage_bucket": "kisisel-harcama-kocu.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290830664216:android:ddb0f35fa43d81c48e796d",
+        "android_client_info": {
+          "package_name": "com.example.kisisel_harcama_kocu_son"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "290830664216-3fkmpg9tgpsffvqsgkqijgjn1p625d99.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.kisisel_harcama_kocu_son",
+            "certificate_hash": "707fedbb4273c90282a385507f3b2116abe5f6fe"
+          }
+        },
+        {
+          "client_id": "290830664216-bnetflrliu1nejrhc7vb1480tb3t1ath.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsTk6frSHw84pDWK8LaW3FSnRUb7lxbPw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "290830664216-bnetflrliu1nejrhc7vb1480tb3t1ath.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "290830664216-v9vq7jt750nhtjf381un3hsle1n3tssp.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.kisiselHarcamaKocuSon"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
