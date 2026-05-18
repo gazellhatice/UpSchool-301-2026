@@ -85,9 +85,17 @@ class _AuthenticatedHomeState extends ConsumerState<AuthenticatedHome> {
       );
     }
 
-    return HomeShell(
-      user: widget.user,
-      authService: widget.authService,
+    // userChanges() stream'i — displayName, photoURL değişince otomatik yenilenir
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.userChanges(),
+      initialData: widget.user,
+      builder: (context, snapshot) {
+        final user = snapshot.data ?? widget.user;
+        return HomeShell(
+          user: user,
+          authService: widget.authService,
+        );
+      },
     );
   }
 }

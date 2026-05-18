@@ -14,11 +14,15 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 
+final firestoreProvider = Provider<FirebaseFirestore>((ref) {
+  return FirebaseFirestore.instance;
+});
+
 final financeRepositoryProvider =
-    Provider.family<FinanceRepository, String>((ref, userId) {
+Provider.family<FinanceRepository, String>((ref, userId) {
   return FinanceRepository(
     database: ref.watch(databaseProvider),
-    firestore: FirebaseFirestore.instance,
+    firestore: ref.watch(firestoreProvider),
     userId: userId,
   );
 });

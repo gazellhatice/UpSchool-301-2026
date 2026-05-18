@@ -14,6 +14,7 @@ class AuthService {
         _googleSignIn = googleSignIn ??
             GoogleSignIn(
               clientId: kIsWeb ? AppConfig.webGoogleClientId : null,
+              scopes: ['email'],
             );
 
   final FirebaseAuth _auth;

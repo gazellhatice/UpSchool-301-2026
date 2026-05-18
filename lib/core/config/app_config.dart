@@ -6,5 +6,5 @@ abstract final class AppConfig {
   /// Firebase Console → Proje ayarları → Web uygulaması ekle → appId
   /// (Web uygulaması yoksa Chrome'da giriş çalışmaz; Android emülatör önerilir.)
   static const String firebaseWebAppId =
-      '1:290830664216:web:ddb0f35fa43d81c48e796d';
+      '1:290830664216:web:dd2144a615eff70a8e796d';
 }

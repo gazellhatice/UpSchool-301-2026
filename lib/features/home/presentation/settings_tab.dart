@@ -14,6 +14,7 @@ import 'package:kisisel_harcama_kocu_1/core/widgets/glass_card.dart';
 import 'package:kisisel_harcama_kocu_1/data/repositories/finance_repository.dart';
 import 'package:kisisel_harcama_kocu_1/domain/models/category_item.dart';
 import 'package:kisisel_harcama_kocu_1/features/auth/data/auth_service.dart';
+import 'package:kisisel_harcama_kocu_1/features/home/presentation/edit_profile_sheet.dart';
 import 'package:kisisel_harcama_kocu_1/features/categories/presentation/add_category_sheet.dart';
 import 'package:kisisel_harcama_kocu_1/features/legal/privacy_policy_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -37,6 +38,21 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
   String? _appVersion;
   bool? _isOnline;
 
+  static const _avatars = [
+    (emoji: '😊', color: Color(0xFF6C63FF)),
+    (emoji: '🦊', color: Color(0xFFFF6B6B)),
+    (emoji: '🐬', color: Color(0xFF48CAE4)),
+    (emoji: '🌿', color: Color(0xFF52B788)),
+    (emoji: '🔥', color: Color(0xFFFF9F1C)),
+    (emoji: '⚡', color: Color(0xFFFFD60A)),
+    (emoji: '🎯', color: Color(0xFFE63946)),
+    (emoji: '🦋', color: Color(0xFFB5179E)),
+    (emoji: '🐉', color: Color(0xFF2D6A4F)),
+    (emoji: '🚀', color: Color(0xFF023E8A)),
+    (emoji: '🌙', color: Color(0xFF7B2D8B)),
+    (emoji: '💎', color: Color(0xFF0096C7)),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -58,7 +74,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     setState(() => _syncing = true);
     try {
       final result =
-          await ref.read(financeRepositoryProvider(widget.user.uid)).sync();
+      await ref.read(financeRepositoryProvider(widget.user.uid)).sync();
       await _loadMeta();
       if (!mounted) return;
 
@@ -96,7 +112,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
       context,
       title: 'Kategoriyi sil',
       message:
-          '"${category.name}" silinsin mi? Bu kategorideki işlemler "Diğer" altına taşınır.',
+      '"${category.name}" silinsin mi? Bu kategorideki işlemler "Diğer" altına taşınır.',
     );
     if (!ok) return;
 
@@ -128,9 +144,53 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     );
     if (!ok) return;
 
-    await ref.read(financeRepositoryProvider(widget.user.uid)).clearLocalUserData();
+    await ref
+        .read(financeRepositoryProvider(widget.user.uid))
+        .clearLocalUserData();
     ref.read(lastSyncAtProvider.notifier).clear();
     await widget.authService.signOut();
+  }
+
+  Widget _buildAvatar(ThemeData theme) {
+    final photoUrl = widget.user.photoURL ?? '';
+
+    if (photoUrl.startsWith('avatar:')) {
+      final idx = int.tryParse(photoUrl.replaceFirst('avatar:', ''));
+      if (idx != null && idx < _avatars.length) {
+        final av = _avatars[idx];
+        return Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: av.color.withValues(alpha: 0.15),
+            shape: BoxShape.circle,
+            border: Border.all(color: av.color, width: 2),
+          ),
+          child: Center(
+            child: Text(av.emoji, style: const TextStyle(fontSize: 28)),
+          ),
+        );
+      }
+    }
+
+    if (photoUrl.isNotEmpty && !photoUrl.startsWith('avatar:')) {
+      return CircleAvatar(
+        radius: 32,
+        backgroundImage: NetworkImage(photoUrl),
+      );
+    }
+
+    return CircleAvatar(
+      radius: 32,
+      backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+      child: Text(
+        (widget.user.displayName ?? widget.user.email ?? 'K')[0].toUpperCase(),
+        style: theme.textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w800,
+          color: AppColors.primary,
+        ),
+      ),
+    );
   }
 
   @override
@@ -155,50 +215,57 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           ),
         ),
         const SizedBox(height: 20),
+
+        // Profil kartı — tıklanabilir
         GlassCard(
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 32,
-                backgroundImage: widget.user.photoURL != null
-                    ? NetworkImage(widget.user.photoURL!)
-                    : null,
-                backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-                child: widget.user.photoURL == null
-                    ? Text(
-                        (widget.user.displayName ?? 'K')[0].toUpperCase(),
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
+          padding: EdgeInsets.zero,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () async {
+              await EditProfileSheet.show(context, widget.user);
+              setState(() {});
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  _buildAvatar(theme),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.user.displayName ?? 'Kullanıcı',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.user.displayName ?? 'Kullanıcı',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.user.email ?? '',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: palette.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.user.email ?? '',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: palette.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  Icon(
+                    Icons.edit_outlined,
+                    size: 18,
+                    color: palette.textSecondary,
+                  ),
+                  const SizedBox(width: 4),
+                ],
               ),
-            ],
+            ),
           ),
         ),
+
         const SizedBox(height: 16),
+
+        // Bulut senkron
         GlassCard(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
@@ -207,7 +274,9 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                 _isOnline == true
                     ? Icons.wifi_rounded
                     : Icons.wifi_off_rounded,
-                color: _isOnline == true ? AppColors.accent : AppColors.accentWarm,
+                color: _isOnline == true
+                    ? AppColors.accent
+                    : AppColors.accentWarm,
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -231,19 +300,21 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
               ),
               _syncing
                   ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
                   : IconButton(
-                      tooltip: 'Şimdi senkronize et',
-                      icon: const Icon(Icons.sync_rounded),
-                      onPressed: _sync,
-                    ),
+                tooltip: 'Şimdi senkronize et',
+                icon: const Icon(Icons.sync_rounded),
+                onPressed: _sync,
+              ),
             ],
           ),
         ),
         const SizedBox(height: 10),
+
+        // Tema
         GlassCard(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -291,11 +362,14 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           ),
         ),
         const SizedBox(height: 10),
+
+        // Gizlilik politikası
         GlassCard(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.policy_outlined, color: AppColors.primary),
+            leading:
+            const Icon(Icons.policy_outlined, color: AppColors.primary),
             title: const Text('Gizlilik politikası'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
@@ -307,6 +381,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
             },
           ),
         ),
+
         if (_appVersion != null) ...[
           const SizedBox(height: 8),
           Center(
@@ -319,6 +394,8 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           ),
         ],
         const SizedBox(height: 20),
+
+        // Kategoriler başlığı
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -337,6 +414,8 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           ],
         ),
         const SizedBox(height: 8),
+
+        // Kategori listesi
         categoriesAsync.when(
           loading: () => const LinearProgressIndicator(),
           error: (e, _) => Text('Kategoriler: $e'),
@@ -369,7 +448,9 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                         ),
                       ),
                       subtitle: Text(
-                        c.isIncome ? 'Gelir kategorisi' : 'Gider kategorisi',
+                        c.isIncome
+                            ? 'Gelir kategorisi'
+                            : 'Gider kategorisi',
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: palette.textSecondary,
                         ),
@@ -411,6 +492,8 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           },
         ),
         const SizedBox(height: 20),
+
+        // Çıkış yap
         FilledButton.icon(
           onPressed: _signOut,
           icon: const Icon(Icons.logout_rounded),
