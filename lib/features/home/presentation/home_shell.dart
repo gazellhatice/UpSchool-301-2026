@@ -4,6 +4,7 @@ import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
 import 'package:kisisel_harcama_kocu_1/core/widgets/gradient_background.dart';
 import 'package:kisisel_harcama_kocu_1/features/auth/data/auth_service.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/calendar_tab.dart';
+import 'package:kisisel_harcama_kocu_1/features/home/presentation/coach_chat_screen.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/dashboard_tab.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/settings_tab.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/stats_tab.dart';
@@ -28,6 +29,9 @@ class _HomeShellState extends State<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    // İşlem ekle FAB'ı sadece Özet ve Takvim sekmesinde görünür
+    final showAddFab = _index == 0 || _index == 2;
+
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -45,15 +49,36 @@ class _HomeShellState extends State<HomeShell> {
             ],
           ),
         ),
-        floatingActionButton: _index == 0 || _index == 2
-            ? FloatingActionButton.extended(
+        floatingActionButton: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // Finans Koçu FAB — her zaman görünür
+            FloatingActionButton(
+              heroTag: 'coach_fab',
+              onPressed: () => CoachChatScreen.show(context, widget.user),
+              backgroundColor: const Color(0xFF6C63FF),
+              elevation: 4,
+              tooltip: 'Finans Koçu',
+              child: const Icon(
+                Icons.auto_awesome_rounded,
+                color: Colors.white,
+              ),
+            ),
+            // İşlem ekle FAB — sadece Özet ve Takvim'de
+            if (showAddFab) ...[
+              const SizedBox(height: 12),
+              FloatingActionButton.extended(
+                heroTag: 'add_transaction_fab',
                 onPressed: () =>
                     TransactionFormSheet.show(context, widget.user.uid),
                 icon: const Icon(Icons.add_rounded),
                 label: const Text('İşlem ekle'),
                 backgroundColor: AppColors.primary,
-              )
-            : null,
+              ),
+            ],
+          ],
+        ),
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: NavigationBar(
