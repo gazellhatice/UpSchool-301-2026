@@ -28,9 +28,9 @@ class _CoachChatScreenState extends State<CoachChatScreen> {
   bool _loading = false;
   bool _historyLoaded = false;
 
-  // ⚠️ Buraya kendi Claude API anahtarını yaz
-  static const _apiKey = 'BURAYA_API_ANAHTARINI_YAZ';
-  static const _model = 'claude-sonnet-4-20250514';
+  // ⚠️ Buraya Gemini API anahtarı
+  static const _apiKey = 'YOUR_GEMINI_API_KEY';
+  static const _model = 'gemini-1.5-pro'; // veya gemini-1.5-flash
 
   static const _systemPrompt = '''
 Sen "Finans Koçu" adlı kişisel bir finans asistanısın. 
@@ -104,7 +104,6 @@ Gerektiğinde somut öneriler ve adımlar ver.
     await _saveMessage(userMsg);
 
     try {
-      // Son 20 mesajı API'ye gönder (context window için)
       final history = _messages
           .where((m) => m.role != 'typing')
           .toList()
@@ -114,39 +113,53 @@ Gerektiğinde somut öneriler ve adımlar ver.
           .reversed
           .toList();
 
-      final apiMessages = history
-          .map((m) => {'role': m.role, 'content': m.text})
-          .toList();
+      // Gemini formatına çevir
+      final contents = history.map((m) {
+        return {
+          "role": m.role == "user" ? "user" : "model",
+          "parts": [
+            {"text": m.text}
+          ]
+        };
+      }).toList();
 
       final response = await http.post(
-        Uri.parse('https://api.anthropic.com/v1/messages'),
+        Uri.parse(
+          'https://generativelanguage.googleapis.com/v1beta/models/$_model:generateContent?key=$_apiKey',
+        ),
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': _apiKey,
-          'anthropic-version': '2023-06-01',
         },
         body: jsonEncode({
-          'model': _model,
-          'max_tokens': 1024,
-          'system': _systemPrompt,
-          'messages': apiMessages,
+          "contents": contents,
+          "systemInstruction": {
+            "parts": [
+              {"text": _systemPrompt}
+            ]
+          },
+          "generationConfig": {
+            "maxOutputTokens": 1024,
+            "temperature": 0.7
+          }
         }),
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final replyText =
-        (data['content'] as List).first['text'] as String;
+        final data = jsonDecode(response.body);
+
+        final replyText = data["candidates"][0]["content"]["parts"][0]["text"];
+
         final assistantMsg = _Message(role: 'assistant', text: replyText);
 
         setState(() {
           _messages.add(assistantMsg);
           _loading = false;
         });
+
         await _saveMessage(assistantMsg);
         _scrollToBottom();
       } else {
-        _showError('API hatası: ${response.statusCode}');
+        _showError('Gemini API hatası: ${response.statusCode}');
       }
     } catch (e) {
       _showError('Bağlantı hatası: $e');
