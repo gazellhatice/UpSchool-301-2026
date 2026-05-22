@@ -14,11 +14,11 @@ Birçok kullanıcı harcamalarını dağınık notlarda, banka uygulamalarında 
 
 ### 1.2 Çözüm
 
-**Kişisel Harcama Koçu**, mobil-first bir finans takip uygulamasıdır. Kullanıcı işlemlerini saniyeler içinde kaydeder; uygulama aylık bakiye, gider dağılımı ve günlük takvim görünümü sunar. Veriler önce cihazda tutulur, sonra bulutta yedeklenir.
+**Kişisel Harcama Koçu**, mobil-first bir finans takip uygulamasıdır. Kullanıcı işlemlerini saniyeler içinde kaydeder; uygulama aylık bakiye, gider dağılımı ve günlük takvim görünümü sunar. **Yapay zeka destekli Finans Koçu**, kullanıcının gerçek harcama verilerine dayanarak kişiselleştirilmiş bütçe tavsiyeleri verir. Veriler önce cihazda tutulur, sonra bulutta yedeklenir.
 
 ### 1.3 Ürün vizyonu
 
-> “Paranı nereye harcadığını bilen, bilinçli harcama kararı veren herkes için en sade kişisel finans koçu.”
+> "Paranı nereye harcadığını bilen, AI koçuyla bilinçli harcama kararı veren herkes için en sade kişisel finans uygulaması."
 
 ---
 
@@ -48,6 +48,8 @@ Birçok kullanıcı harcamalarını dağınık notlarda, banka uygulamalarında 
 | US-08 | Kullanıcı olarak kendi kategorimi oluşturmak istiyorum, böylece harcama tiplerim bana özel olsun. | P1 |
 | US-09 | Kullanıcı olarak koyu tema kullanmak istiyorum, gece rahat kullanayım. | P2 |
 | US-10 | Kullanıcı olarak yanlış işlemi silmek istiyorum, veri setim temiz kalsın. | P1 |
+| US-11 | Kullanıcı olarak AI finans koçuna soru sormak istiyorum, gerçek harcamalarıma göre tavsiye alsın. | P0 |
+| US-12 | Kullanıcı olarak aylık AI finans özetini tek tıkla görmek istiyorum. | P0 |
 
 ---
 
@@ -117,6 +119,17 @@ Birçok kullanıcı harcamalarını dağınık notlarda, banka uygulamalarında 
 | FR-SET-02 | Açık/koyu tema, kalıcı tercih | ✅ |
 | FR-SET-03 | Kategori listesi görüntüleme | ✅ |
 | FR-SET-04 | Çıkış yap | ✅ |
+
+### 4.7 Yapay Zeka Finans Koçu (FR-AI)
+
+| ID | Gereksinim | Durum |
+|----|------------|--------|
+| FR-AI-01 | Backend REST API üzerinden Gemini LLM entegrasyonu | ✅ |
+| FR-AI-02 | Kullanıcının aylık gelir/gider/kategori verisi koça aktarılır | ✅ |
+| FR-AI-03 | Sohbet geçmişi Firestore'da saklanır | ✅ |
+| FR-AI-04 | Dashboard'da tek tıkla AI aylık analiz | ✅ |
+| FR-AI-05 | API anahtarı backend'de; istemcide tutulmaz | ✅ |
+| FR-AI-06 | Firebase token ile backend yetkilendirme | ✅ |
 
 ---
 

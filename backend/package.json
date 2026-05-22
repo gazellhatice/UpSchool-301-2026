@@ -1,0 +1,23 @@
+{
+  "name": "kisisel-harcama-kocu-backend",
+  "version": "1.0.0",
+  "description": "Kişisel Harcama Koçu — Gemini LLM API backend",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test:gemini": "node scripts/test-gemini.mjs",
+    "test:llm": "node scripts/test-gemini.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "firebase-admin": "^13.0.2"
+  }
+}
