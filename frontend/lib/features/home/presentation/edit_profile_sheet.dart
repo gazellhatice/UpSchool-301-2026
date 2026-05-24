@@ -1,7 +1,7 @@
-import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
+import 'package:kisisel_harcama_kocu_1/features/home/presentation/profile/profile_avatars.dart';
 
 class EditProfileSheet extends StatefulWidget {
   const EditProfileSheet({super.key, required this.user});
@@ -33,20 +33,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
   int? _selectedAvatarIndex;
 
   // Renk + emoji avatar seçenekleri
-  static const _avatars = [
-    (emoji: '😊', color: Color(0xFF6C63FF)),
-    (emoji: '🦊', color: Color(0xFFFF6B6B)),
-    (emoji: '🐬', color: Color(0xFF48CAE4)),
-    (emoji: '🌿', color: Color(0xFF52B788)),
-    (emoji: '🔥', color: Color(0xFFFF9F1C)),
-    (emoji: '⚡', color: Color(0xFFFFD60A)),
-    (emoji: '🎯', color: Color(0xFFE63946)),
-    (emoji: '🦋', color: Color(0xFFB5179E)),
-    (emoji: '🐉', color: Color(0xFF2D6A4F)),
-    (emoji: '🚀', color: Color(0xFF023E8A)),
-    (emoji: '🌙', color: Color(0xFF7B2D8B)),
-    (emoji: '💎', color: Color(0xFF0096C7)),
-  ];
+  static const _avatars = ProfileAvatars.options;
 
   @override
   void initState() {
@@ -58,13 +45,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
     _passwordConfirmCtrl = TextEditingController();
 
     // Eğer photoURL avatar index içeriyorsa parse et
-    final url = widget.user.photoURL ?? '';
-    if (url.startsWith('avatar:')) {
-      final idx = int.tryParse(url.replaceFirst('avatar:', ''));
-      if (idx != null && idx < _avatars.length) {
-        _selectedAvatarIndex = idx;
-      }
-    }
+    _selectedAvatarIndex = ProfileAvatars.indexFromPhotoUrl(widget.user.photoURL);
   }
 
   @override

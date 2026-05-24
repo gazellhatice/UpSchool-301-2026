@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kisisel_harcama_kocu_1/core/providers/home_navigation_provider.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
 import 'package:kisisel_harcama_kocu_1/core/widgets/gradient_background.dart';
 import 'package:kisisel_harcama_kocu_1/features/auth/data/auth_service.dart';
@@ -10,7 +12,7 @@ import 'package:kisisel_harcama_kocu_1/features/home/presentation/settings_tab.d
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/stats_tab.dart';
 import 'package:kisisel_harcama_kocu_1/features/transactions/presentation/transaction_form_sheet.dart';
 
-class HomeShell extends StatefulWidget {
+class HomeShell extends ConsumerWidget {
   const HomeShell({
     super.key,
     required this.user,
@@ -21,30 +23,23 @@ class HomeShell extends StatefulWidget {
   final AuthService authService;
 
   @override
-  State<HomeShell> createState() => _HomeShellState();
-}
-
-class _HomeShellState extends State<HomeShell> {
-  int _index = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    // İşlem ekle FAB'ı sadece Özet ve Takvim sekmesinde görünür
-    final showAddFab = _index == 0 || _index == 2;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final index = ref.watch(homeTabIndexProvider);
+    final showAddFab = index == 0 || index == 2;
 
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
           child: IndexedStack(
-            index: _index,
+            index: index,
             children: [
-              DashboardTab(user: widget.user),
-              StatsTab(userId: widget.user.uid),
-              CalendarTab(userId: widget.user.uid),
+              DashboardTab(user: user),
+              StatsTab(userId: user.uid, user: user),
+              CalendarTab(userId: user.uid, user: user),
               SettingsTab(
-                user: widget.user,
-                authService: widget.authService,
+                user: user,
+                authService: authService,
               ),
             ],
           ),
@@ -53,10 +48,9 @@ class _HomeShellState extends State<HomeShell> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            // Finans Koçu FAB — her zaman görünür
             FloatingActionButton(
               heroTag: 'coach_fab',
-              onPressed: () => CoachChatScreen.show(context, widget.user),
+              onPressed: () => CoachChatScreen.show(context, user),
               backgroundColor: const Color(0xFF6C63FF),
               elevation: 4,
               tooltip: 'Finans Koçu',
@@ -65,13 +59,12 @@ class _HomeShellState extends State<HomeShell> {
                 color: Colors.white,
               ),
             ),
-            // İşlem ekle FAB — sadece Özet ve Takvim'de
             if (showAddFab) ...[
               const SizedBox(height: 12),
               FloatingActionButton.extended(
                 heroTag: 'add_transaction_fab',
                 onPressed: () =>
-                    TransactionFormSheet.show(context, widget.user.uid),
+                    TransactionFormSheet.show(context, user.uid),
                 icon: const Icon(Icons.add_rounded),
                 label: const Text('İşlem ekle'),
                 backgroundColor: AppColors.primary,
@@ -82,9 +75,10 @@ class _HomeShellState extends State<HomeShell> {
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: NavigationBar(
-            selectedIndex: _index,
+            selectedIndex: index,
             height: 68,
-            onDestinationSelected: (value) => setState(() => _index = value),
+            onDestinationSelected: (value) =>
+                ref.read(homeTabIndexProvider.notifier).state = value,
             destinations: const [
               NavigationDestination(
                 icon: Icon(Icons.space_dashboard_outlined),

@@ -47,6 +47,28 @@ class CategoryStat {
   final double percent;
 }
 
+class DailyExpenseTotal {
+  const DailyExpenseTotal({
+    required this.day,
+    required this.amount,
+  });
+
+  final DateTime day;
+  final double amount;
+}
+
+class TodaySummary {
+  const TodaySummary({
+    required this.income,
+    required this.expense,
+    required this.transactionCount,
+  });
+
+  final double income;
+  final double expense;
+  final int transactionCount;
+}
+
 class SyncResult {
   const SyncResult({
     required this.success,
@@ -117,6 +139,51 @@ class FinanceRepository {
     return _db
         .watchTransactionsOnDay(_userId, day)
         .map((rows) => rows.map((r) => r.toDomain()).toList());
+  }
+
+  Stream<TodaySummary> watchTodaySummary() {
+    final now = DateTime.now();
+    return watchDayTransactions(now).map((items) {
+      var income = 0.0;
+      var expense = 0.0;
+      for (final tx in items) {
+        if (tx.isIncome) {
+          income += tx.amount;
+        } else {
+          expense += tx.amount;
+        }
+      }
+      return TodaySummary(
+        income: income,
+        expense: expense,
+        transactionCount: items.length,
+      );
+    });
+  }
+
+  Stream<List<DailyExpenseTotal>> watchDailyExpenseTotals(
+    DateTime start,
+    DateTime end,
+  ) {
+    return _db.watchTransactionsBetween(_userId, start, end).map((rows) {
+      final totals = <DateTime, double>{};
+      for (final row in rows) {
+        final tx = row.toDomain();
+        if (tx.isIncome) continue;
+        final day = DateTime(tx.date.year, tx.date.month, tx.date.day);
+        totals[day] = (totals[day] ?? 0) + tx.amount;
+      }
+
+      final startDay = DateTime(start.year, start.month, start.day);
+      final endDay = DateTime(end.year, end.month, end.day);
+      final result = <DailyExpenseTotal>[];
+      var cursor = startDay;
+      while (!cursor.isAfter(endDay)) {
+        result.add(DailyExpenseTotal(day: cursor, amount: totals[cursor] ?? 0));
+        cursor = cursor.add(const Duration(days: 1));
+      }
+      return result;
+    });
   }
 
   Stream<List<CategoryStat>> watchExpenseStats(DateTime month) {

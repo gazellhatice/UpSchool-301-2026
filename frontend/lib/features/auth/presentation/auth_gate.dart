@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
-import 'package:kisisel_harcama_kocu_1/features/auth/presentation/auth_screen.dart';
+import 'package:kisisel_harcama_kocu_1/features/auth/presentation/auth_flow_screen.dart';
 import 'package:kisisel_harcama_kocu_1/features/auth/presentation/splash_screen.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/authenticated_home.dart';
 
@@ -45,7 +45,7 @@ class AuthGate extends ConsumerWidget {
 
         final user = snapshot.data;
         if (user == null) {
-          return AuthScreen(
+          return AuthFlowScreen(
             authService: authService,
             firebaseInitError: firebaseInitError,
           );

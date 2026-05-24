@@ -12,15 +12,21 @@ class TransactionFormSheet extends ConsumerStatefulWidget {
     super.key,
     required this.userId,
     this.transaction,
+    this.initialCategoryId,
+    this.initialDate,
   });
 
   final String userId;
   final TransactionItem? transaction;
+  final String? initialCategoryId;
+  final DateTime? initialDate;
 
   static Future<void> show(
     BuildContext context,
     String userId, {
     TransactionItem? transaction,
+    String? initialCategoryId,
+    DateTime? initialDate,
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -29,6 +35,8 @@ class TransactionFormSheet extends ConsumerStatefulWidget {
       builder: (_) => TransactionFormSheet(
         userId: userId,
         transaction: transaction,
+        initialCategoryId: initialCategoryId,
+        initialDate: initialDate,
       ),
     );
   }
@@ -57,8 +65,8 @@ class _TransactionFormSheetState extends ConsumerState<TransactionFormSheet> {
     );
     _noteController = TextEditingController(text: tx?.note ?? '');
     _type = tx?.type ?? TransactionType.expense;
-    _categoryId = tx?.categoryId;
-    _date = tx?.date ?? DateTime.now();
+    _categoryId = tx?.categoryId ?? widget.initialCategoryId;
+    _date = tx?.date ?? widget.initialDate ?? DateTime.now();
   }
 
   @override

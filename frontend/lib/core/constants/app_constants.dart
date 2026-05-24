@@ -2,6 +2,7 @@ abstract final class AppConstants {
   static const appName = 'Kişisel Harcama Koçu';
   static const supportEmail = 'destek@ornek.com';
   static const privacyPolicyUrl = 'https://ornek.com/gizlilik';
+  static const authOnboardingCompletedKey = 'auth_onboarding_completed';
 
   static const privacyPolicyBody = '''
 Kişisel Harcama Koçu Gizlilik Özeti

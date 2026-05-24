@@ -2,22 +2,31 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:kisisel_harcama_kocu_1/core/constants/app_constants.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
+import 'package:kisisel_harcama_kocu_1/core/providers/budget_provider.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/sync_status_provider.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/theme_provider.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_palette.dart';
+import 'package:kisisel_harcama_kocu_1/core/utils/currency_format.dart';
+import 'package:kisisel_harcama_kocu_1/core/widgets/app_screen_header.dart';
 import 'package:kisisel_harcama_kocu_1/core/widgets/confirm_dialog.dart';
-import 'package:kisisel_harcama_kocu_1/core/widgets/glass_card.dart';
 import 'package:kisisel_harcama_kocu_1/data/repositories/finance_repository.dart';
 import 'package:kisisel_harcama_kocu_1/domain/models/category_item.dart';
 import 'package:kisisel_harcama_kocu_1/features/auth/data/auth_service.dart';
+import 'package:kisisel_harcama_kocu_1/features/home/presentation/coach_chat_screen.dart';
+import 'package:kisisel_harcama_kocu_1/features/home/presentation/dashboard/budget_edit_sheet.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/edit_profile_sheet.dart';
-import 'package:kisisel_harcama_kocu_1/features/categories/presentation/add_category_sheet.dart';
+import 'package:kisisel_harcama_kocu_1/features/home/presentation/profile/profile_avatars.dart';
+import 'package:kisisel_harcama_kocu_1/features/home/presentation/profile/profile_categories_section.dart';
+import 'package:kisisel_harcama_kocu_1/features/home/presentation/profile/profile_hero_card.dart';
+import 'package:kisisel_harcama_kocu_1/features/home/presentation/profile/profile_preferences_cards.dart';
+import 'package:kisisel_harcama_kocu_1/features/home/presentation/profile/profile_stats_row.dart';
+import 'package:kisisel_harcama_kocu_1/features/home/presentation/profile/settings_section.dart';
 import 'package:kisisel_harcama_kocu_1/features/legal/privacy_policy_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsTab extends ConsumerStatefulWidget {
   const SettingsTab({
@@ -37,21 +46,6 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
   bool _syncing = false;
   String? _appVersion;
   bool? _isOnline;
-
-  static const _avatars = [
-    (emoji: '😊', color: Color(0xFF6C63FF)),
-    (emoji: '🦊', color: Color(0xFFFF6B6B)),
-    (emoji: '🐬', color: Color(0xFF48CAE4)),
-    (emoji: '🌿', color: Color(0xFF52B788)),
-    (emoji: '🔥', color: Color(0xFFFF9F1C)),
-    (emoji: '⚡', color: Color(0xFFFFD60A)),
-    (emoji: '🎯', color: Color(0xFFE63946)),
-    (emoji: '🦋', color: Color(0xFFB5179E)),
-    (emoji: '🐉', color: Color(0xFF2D6A4F)),
-    (emoji: '🚀', color: Color(0xFF023E8A)),
-    (emoji: '🌙', color: Color(0xFF7B2D8B)),
-    (emoji: '💎', color: Color(0xFF0096C7)),
-  ];
 
   @override
   void initState() {
@@ -74,7 +68,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     setState(() => _syncing = true);
     try {
       final result =
-      await ref.read(financeRepositoryProvider(widget.user.uid)).sync();
+          await ref.read(financeRepositoryProvider(widget.user.uid)).sync();
       await _loadMeta();
       if (!mounted) return;
 
@@ -112,7 +106,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
       context,
       title: 'Kategoriyi sil',
       message:
-      '"${category.name}" silinsin mi? Bu kategorideki işlemler "Diğer" altına taşınır.',
+          '"${category.name}" silinsin mi? Bu kategorideki işlemler "Diğer" altına taşınır.',
     );
     if (!ok) return;
 
@@ -151,355 +145,198 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     await widget.authService.signOut();
   }
 
-  Widget _buildAvatar(ThemeData theme) {
-    final photoUrl = widget.user.photoURL ?? '';
-
-    if (photoUrl.startsWith('avatar:')) {
-      final idx = int.tryParse(photoUrl.replaceFirst('avatar:', ''));
-      if (idx != null && idx < _avatars.length) {
-        final av = _avatars[idx];
-        return Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            color: av.color.withValues(alpha: 0.15),
-            shape: BoxShape.circle,
-            border: Border.all(color: av.color, width: 2),
-          ),
-          child: Center(
-            child: Text(av.emoji, style: const TextStyle(fontSize: 28)),
-          ),
-        );
-      }
-    }
-
-    if (photoUrl.isNotEmpty && !photoUrl.startsWith('avatar:')) {
-      return CircleAvatar(
-        radius: 32,
-        backgroundImage: NetworkImage(photoUrl),
+  Future<void> _openSupportEmail() async {
+    final uri = Uri(
+      scheme: 'mailto',
+      path: AppConstants.supportEmail,
+      query: 'subject=${Uri.encodeComponent('${AppConstants.appName} Destek')}',
+    );
+    if (!await launchUrl(uri)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('E-posta açılamadı: ${AppConstants.supportEmail}')),
       );
     }
+  }
 
-    return CircleAvatar(
-      radius: 32,
-      backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-      child: Text(
-        (widget.user.displayName ?? widget.user.email ?? 'K')[0].toUpperCase(),
-        style: theme.textTheme.headlineSmall?.copyWith(
-          fontWeight: FontWeight.w800,
-          color: AppColors.primary,
-        ),
-      ),
-    );
+  Future<void> _openEditProfile() async {
+    await EditProfileSheet.show(context, widget.user);
+    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final palette = context.palette;
-    final categoriesAsync = ref.watch(categoriesProvider(widget.user.uid));
+    final month = ref.watch(selectedMonthProvider);
+    final budget = ref.watch(monthlyBudgetProvider(widget.user.uid));
     final lastSync = ref.watch(lastSyncAtProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final categories = ref.watch(categoriesProvider(widget.user.uid)).valueOrNull ?? const [];
+    final summary = ref
+        .watch(monthSummaryProvider((userId: widget.user.uid, month: month)))
+        .valueOrNull;
 
-    final syncSubtitle = lastSync != null
-        ? 'Son: ${DateFormat('d MMM HH:mm', 'tr_TR').format(lastSync)}'
-        : 'Henüz senkron yapılmadı';
+    final budgetLabel = budget != null && budget > 0
+        ? 'Aylık bütçe: ${formatCurrency(budget)}'
+        : 'Aylık bütçe hedefi henüz ayarlanmadı';
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
       children: [
-        Text(
-          'Profil & Ayarlar',
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w800,
-          ),
+        AppScreenHeader(
+          sectionLabel: 'Profil',
+          title: widget.user.displayName ?? 'Hesabım',
+          subtitle: 'Ayarlar, kategoriler, senkron ve hesap yönetimi',
+          user: widget.user,
+          showProfileAvatar: false,
+          onCoachTap: () => CoachChatScreen.show(context, widget.user),
         ),
         const SizedBox(height: 20),
-
-        // Profil kartı — tıklanabilir
-        GlassCard(
-          padding: EdgeInsets.zero,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: () async {
-              await EditProfileSheet.show(context, widget.user);
-              setState(() {});
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  _buildAvatar(theme),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.user.displayName ?? 'Kullanıcı',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          widget.user.email ?? '',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: palette.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.edit_outlined,
-                    size: 18,
-                    color: palette.textSecondary,
-                  ),
-                  const SizedBox(width: 4),
-                ],
-              ),
-            ),
-          ),
+        ProfileHeroCard(
+          user: widget.user,
+          onEditTap: _openEditProfile,
         ),
-
         const SizedBox(height: 16),
-
-        // Bulut senkron
-        GlassCard(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Icon(
-                _isOnline == true
-                    ? Icons.wifi_rounded
-                    : Icons.wifi_off_rounded,
-                color: _isOnline == true
-                    ? AppColors.accent
-                    : AppColors.accentWarm,
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Bulut senkron',
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      syncSubtitle,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: palette.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              _syncing
-                  ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-                  : IconButton(
-                tooltip: 'Şimdi senkronize et',
-                icon: const Icon(Icons.sync_rounded),
-                onPressed: _sync,
-              ),
-            ],
-          ),
+        ProfileStatsRow(
+          transactionCount: summary?.transactions.length ?? 0,
+          categoryCount: categories.length,
         ),
-        const SizedBox(height: 10),
-
-        // Tema
-        GlassCard(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.palette_outlined, color: AppColors.primary),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Tema',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              SegmentedButton<ThemeMode>(
-                segments: const [
-                  ButtonSegment(
-                    value: ThemeMode.system,
-                    label: Text('Sistem'),
-                    icon: Icon(Icons.brightness_auto_rounded),
-                  ),
-                  ButtonSegment(
-                    value: ThemeMode.light,
-                    label: Text('Açık'),
-                    icon: Icon(Icons.light_mode_outlined),
-                  ),
-                  ButtonSegment(
-                    value: ThemeMode.dark,
-                    label: Text('Koyu'),
-                    icon: Icon(Icons.dark_mode_outlined),
-                  ),
-                ],
-                selected: {themeMode},
-                onSelectionChanged: (selection) {
-                  ref
-                      .read(themeModeProvider.notifier)
-                      .setThemeMode(selection.first);
-                },
-              ),
-            ],
-          ),
+        const SizedBox(height: 12),
+        ProfileFinanceSnapshot(
+          monthIncome: summary?.income ?? 0,
+          monthExpense: summary?.expense ?? 0,
+          budgetLabel: budgetLabel,
         ),
-        const SizedBox(height: 10),
-
-        // Gizlilik politikası
-        GlassCard(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading:
-            const Icon(Icons.policy_outlined, color: AppColors.primary),
-            title: const Text('Gizlilik politikası'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const PrivacyPolicyScreen(),
-                ),
-              );
-            },
-          ),
-        ),
-
-        if (_appVersion != null) ...[
-          const SizedBox(height: 8),
-          Center(
-            child: Text(
-              '${AppConstants.appName} · v$_appVersion',
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: palette.textSecondary,
-              ),
-            ),
-          ),
-        ],
-        const SizedBox(height: 20),
-
-        // Kategoriler başlığı
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        const SizedBox(height: 24),
+        SettingsSection(
+          title: 'Hesap',
           children: [
-            Text(
-              'Kategoriler',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+            SettingsTile(
+              icon: Icons.person_outline_rounded,
+              title: 'Profili düzenle',
+              subtitle: 'Ad, avatar ve şifre',
+              onTap: _openEditProfile,
             ),
-            TextButton.icon(
-              onPressed: () =>
-                  AddCategorySheet.show(context, widget.user.uid),
-              icon: const Icon(Icons.add_rounded, size: 18),
-              label: const Text('Ekle'),
+            SettingsTile(
+              icon: authProviderIcon(widget.user),
+              title: authProviderLabel(widget.user),
+              subtitle: widget.user.email ?? 'E-posta bilgisi yok',
+              trailing: const SizedBox.shrink(),
             ),
           ],
         ),
-        const SizedBox(height: 8),
-
-        // Kategori listesi
-        categoriesAsync.when(
-          loading: () => const LinearProgressIndicator(),
-          error: (e, _) => Text('Kategoriler: $e'),
-          data: (categories) {
-            if (categories.isEmpty) {
-              return GlassCard(
-                child: Text(
-                  'Henüz kategori yok.',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: palette.textSecondary,
-                  ),
-                ),
-              );
-            }
-            return Column(
-              children: categories.map((c) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: GlassCard(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    child: ListTile(
-                      leading: Icon(c.icon, color: c.color),
-                      title: Text(
-                        c.name,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      subtitle: Text(
-                        c.isIncome
-                            ? 'Gelir kategorisi'
-                            : 'Gider kategorisi',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: palette.textSecondary,
-                        ),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (!c.synced)
-                            const Icon(
-                              Icons.cloud_off_rounded,
-                              size: 16,
-                              color: AppColors.accentWarm,
-                            ),
-                          if (!c.isDefault)
-                            IconButton(
-                              icon: const Icon(Icons.edit_outlined, size: 20),
-                              onPressed: () => AddCategorySheet.show(
-                                context,
-                                widget.user.uid,
-                                category: c,
-                              ),
-                            ),
-                          if (!c.isDefault)
-                            IconButton(
-                              icon: Icon(
-                                Icons.delete_outline,
-                                size: 20,
-                                color: theme.colorScheme.error,
-                              ),
-                              onPressed: () => _deleteCategory(c),
-                            ),
-                        ],
-                      ),
-                    ),
+        const SizedBox(height: 16),
+        SettingsSection(
+          title: 'Uygulama',
+          subtitle: 'Senkron, tema ve bütçe ayarları',
+          children: [
+            ProfileSyncCard(
+              isOnline: _isOnline,
+              syncing: _syncing,
+              lastSync: lastSync,
+              onSyncTap: _syncing ? () {} : _sync,
+            ),
+            ProfileThemeSelector(
+              themeMode: themeMode,
+              onChanged: (mode) =>
+                  ref.read(themeModeProvider.notifier).setThemeMode(mode),
+            ),
+            SettingsTile(
+              icon: Icons.account_balance_wallet_outlined,
+              iconColor: AppColors.accentWarm,
+              title: 'Aylık bütçe hedefi',
+              subtitle: budgetLabel,
+              onTap: () => BudgetEditSheet.show(
+                context,
+                userId: widget.user.uid,
+                currentBudget: budget,
+                monthExpense: summary?.expense ?? 0,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        SettingsSection(
+          title: 'Kategoriler',
+          subtitle: 'Gelir ve gider kategorilerini yönet',
+          children: [
+            ProfileCategoriesSection(
+              userId: widget.user.uid,
+              onDeleteCategory: _deleteCategory,
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        SettingsSection(
+          title: 'Destek & yasal',
+          children: [
+            SettingsTile(
+              icon: Icons.policy_outlined,
+              title: 'Gizlilik politikası',
+              subtitle: 'Veri kullanımı ve hakların',
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const PrivacyPolicyScreen(),
                   ),
                 );
-              }).toList(),
-            );
-          },
+              },
+            ),
+            SettingsTile(
+              icon: Icons.support_agent_rounded,
+              iconColor: AppColors.accent,
+              title: 'Destek',
+              subtitle: AppConstants.supportEmail,
+              onTap: _openSupportEmail,
+            ),
+            SettingsTile(
+              icon: Icons.info_outline_rounded,
+              title: AppConstants.appName,
+              subtitle: _appVersion == null ? 'Sürüm yükleniyor...' : 'v$_appVersion',
+              trailing: const SizedBox.shrink(),
+            ),
+          ],
         ),
-        const SizedBox(height: 20),
-
-        // Çıkış yap
-        FilledButton.icon(
-          onPressed: _signOut,
-          icon: const Icon(Icons.logout_rounded),
-          label: const Text('Çıkış yap'),
-          style: FilledButton.styleFrom(
-            backgroundColor: AppColors.danger.withValues(alpha: 0.9),
+        const SizedBox(height: 24),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.danger.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.danger.withValues(alpha: 0.25),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Oturumu kapat',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Çıkış yaptığında yerel veriler cihazında kalır. Tekrar giriş yaparak devam edebilirsin.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: palette.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _signOut,
+                icon: const Icon(Icons.logout_rounded),
+                label: const Text('Çıkış yap'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.danger,
+                  side: BorderSide(color: AppColors.danger.withValues(alpha: 0.45)),
+                ),
+              ),
+            ],
           ),
         ),
       ],
