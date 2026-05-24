@@ -1,7 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
-import 'package:drift/native.dart'; // NativeDatabase için
-import 'package:flutter/foundation.dart'; // kIsWeb için
 
 part 'app_database.g.dart';
 
@@ -67,12 +65,13 @@ class AppDatabase extends _$AppDatabase {
       );
 
   static QueryExecutor _openConnection() {
-    if (kIsWeb) {
-      return LazyDatabase(() async {
-        return NativeDatabase.memory();
-      });
-    }
-    return driftDatabase(name: 'harcama_kocu_db');
+    return driftDatabase(
+      name: 'harcama_kocu_db',
+      web: DriftWebOptions(
+        sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+        driftWorker: Uri.parse('drift_worker.js'),
+      ),
+    );
   }
 
   Stream<List<TransactionWithCategory>> watchTransactionsBetween(
