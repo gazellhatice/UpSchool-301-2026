@@ -2,41 +2,40 @@
 
 Yapay zeka destekli, Türkçe kişisel finans uygulaması. Gelir/gider takibi, analiz, takvim ve **Gemini tabanlı Finans Koçu** ile bilinçli harcama kararları.
 
-## Canlı Demo
+## Canlı demo
 
 | Bileşen | URL |
 |---------|-----|
-| **Web uygulaması** | `https://<firebase-project>.web.app` *(deploy sonrası güncelle)* |
-| **Backend API** | `https://<render-service>.onrender.com/health` *(deploy sonrası güncelle)* |
+| Web uygulaması | *(deploy sonrası güncelle)* |
+| Backend API | *(deploy sonrası `/health` URL)* |
 
-## Ne Yapar?
+## Ne yapar?
 
 - E-posta / Google ile giriş
 - Gelir-gider kaydı, kategori yönetimi, aylık özet
 - Pasta grafik analizi, takvim görünümü
-- **AI Finans Koçu** — kullanıcının gerçek harcama verilerine dayalı sohbet ve aylık analiz
+- **AI Finans Koçu** — gerçek harcama verilerine dayalı sohbet ve aylık analiz
 - Offline-first (Drift/SQLite) + Firebase Firestore senkronu
 
-## Proje Yapısı
+## Proje yapısı
 
 ```
-├── frontend/          Flutter uygulaması (Android, iOS, Web)
-├── backend/           Node.js REST API (Gemini LLM proxy)
-├── prodocs/           AI ajan referans dosyaları
-├── PRD.md             Ürün gereksinimleri
-├── tech-stack.md      Teknoloji seçimleri
-├── Plan.md            Teknik uygulama planı
-├── DesignSystem.md    Tasarım sistemi
-└── Progress.md        Geliştirme günlüğü
+├── frontend/       Flutter uygulaması (Android, iOS, Web)
+├── backend/        Node.js REST API (Gemini LLM proxy)
+├── prodocs/        Ürün ve geliştirme dokümanları
+├── .env.example    Ortam değişkeni şablonu
+└── README.md       Bu dosya
 ```
 
-## Hızlı Başlangıç
+**Dokümanlar:** [prodocs/PRD.md](prodocs/PRD.md) · [tech-stack](prodocs/tech-stack.md) · [Plan](prodocs/Plan.md) · [DesignSystem](prodocs/DesignSystem.md) · [Progress](prodocs/Progress.md)
+
+## Hızlı başlangıç
 
 ### 1. Backend
 
-```bash
+```powershell
 cd backend
-cp .env.example .env
+copy .env.example .env
 # .env içine GEMINI_API_KEY ve FIREBASE_PROJECT_ID ekle
 npm install
 npm run dev
@@ -46,55 +45,45 @@ Backend `http://localhost:3001` adresinde çalışır.
 
 ### 2. Frontend
 
-```bash
+**Chrome (önerilen — emülatör sorununda):**
+```powershell
 cd frontend
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
-flutter run -d chrome --dart-define=BACKEND_URL=http://localhost:3001
+.\run_chrome.ps1
 ```
 
-Android için:
-
-```bash
-flutter run --dart-define=BACKEND_URL=http://10.0.2.2:3001
+**Android emülatör:**
+```powershell
+cd frontend
+.\run_emulator.ps1 -ColdBoot
 ```
+
+> AI koç için backend açık olmalı. Emülatörde `adb reverse tcp:3001 tcp:3001` gerekir (`run_emulator.ps1` otomatik yapar).
 
 ### 3. Firebase
 
 1. Firebase Console'da Auth (E-posta + Google) ve Firestore etkinleştir
 2. `flutterfire configure` komutunu `frontend/` klasöründe çalıştır
-3. Firestore kurallarını deploy et:
+3. Firestore kurallarını deploy et: `firebase deploy --only firestore:rules`
 
-```bash
-firebase deploy --only firestore:rules
-```
-
-## Canlıya Alma (Deploy)
+## Canlıya alma
 
 ### Backend → Render
 
-1. [render.com](https://render.com) üzerinde yeni Web Service oluştur
+1. [render.com](https://render.com) üzerinde Web Service oluştur
 2. Root Directory: `backend`
-3. Environment variables: `GEMINI_API_KEY`, `FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT`, `CORS_ORIGINS`
-4. Deploy sonrası URL'yi not al (ör. `https://kisisel-harcama-kocu-api.onrender.com`)
+3. Env: `GEMINI_API_KEY`, `FIREBASE_PROJECT_ID`, `FIREBASE_SERVICE_ACCOUNT`, `CORS_ORIGINS`
 
 ### Frontend Web → Firebase Hosting
 
-```bash
+```powershell
 cd frontend
 flutter build web --dart-define=BACKEND_URL=https://YOUR-BACKEND.onrender.com
 cd ..
 firebase deploy --only hosting
 ```
 
-### Android APK
-
-```bash
-cd frontend
-flutter build apk --dart-define=BACKEND_URL=https://YOUR-BACKEND.onrender.com
-```
-
-## API Endpoints
+## API
 
 | Method | Endpoint | Açıklama |
 |--------|----------|----------|
@@ -102,14 +91,6 @@ flutter build apk --dart-define=BACKEND_URL=https://YOUR-BACKEND.onrender.com
 | POST | `/api/v1/coach/chat` | Finans koçu sohbeti |
 | POST | `/api/v1/coach/analyze` | Aylık AI finans özeti |
 
-## Ortam Değişkenleri
+## Güvenlik
 
-Kök `.env.example` ve `backend/.env.example` dosyalarına bakın. **Gerçek API anahtarları asla repoya commit edilmemelidir.**
-
-## Demo Video
-
-Maksimum 5 dakikalık demo videosu için [Brief](https://) bölüm 3'teki konu başlıklarını takip edin.
-
-## Lisans
-
-Özel kullanım (`publish_to: 'none'`).
+Gerçek API anahtarları ve veritabanı şifreleri **asla** repoya commit edilmemelidir. Şablon için `.env.example` ve `backend/.env.example` dosyalarına bakın.

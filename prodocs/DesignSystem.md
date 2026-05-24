@@ -78,72 +78,38 @@ coachGradient: [#6C63FF → #48CAE4]            // AI Koç
 | Section gap | `16–24px` | Bölümler arası |
 | Item gap | `10–12px` | Liste elemanları |
 | Border radius (card) | `20px` | GlassCard, Material Card |
-| Border radius (button) | `20px` | Input, chip |
+| Border radius (button) | `16–20px` | Input, chip |
 | Border radius (bubble) | `18px` | Sohbet balonları |
-| Border radius (icon box) | `8–10px` | Koç avatar kutusu |
 
 ---
 
 ## Bileşen Kuralları
 
+### AppLogo & AppScreenHeader
+
+- Marka logosu: `assets/images/splash_logo.png`
+- Tüm sekmelerde ortak üst header (logo, sekme başlığı, koç butonu)
+
 ### GlassCard
 
-- Yarı saydam yüzey + blur hissi
-- `borderRadius: 20`
-- İnce `border` rengi (`palette.border`)
-- İç padding minimum `16px`
+- Yarı saydam yüzey + blur
+- `borderRadius: 24`
+- İnce `border` rengi
 
 ### GradientBackground
 
 - Tüm ana ekranların arka planı
-- `gradientHero` ile derinlik
 
 ### NavigationBar
 
 - 4 sekme: Özet, Analiz, Takvim, Profil
 - `IndexedStack` ile state korunur
-- Indicator: `primary` %20 opacity
-
-### FAB (Floating Action Button)
-
-| FAB | Renk | Görünürlük |
-|-----|------|------------|
-| İşlem ekle (+) | Primary gradient | Özet + Takvim sekmeleri |
-| Finans Koçu (✨) | `#6C63FF` | Her zaman |
-
-### MonthSelector
-
-- Sol/sağ ok ile ay değiştirme
-- `tr_TR` locale ile ay adı
-
-### ConfirmDialog
-
-- Destructive işlemler: kırmızı onay butonu
-- İptal: TextButton
 
 ### Coach Chat
 
-- Kullanıcı balonu: `#6C63FF` dolgu, beyaz metin
-- Asistan balonu: `surface` / beyaz, gölge
-- Typing indicator: 3 animasyonlu nokta
+- Kullanıcı balonu: `#6C63FF`, beyaz metin
+- Asistan balonu: `surface`, gölge
 - Suggestion chips: `%10 primary` arka plan
-
-### CoachInsightCard
-
-- Dashboard'da AI analiz kartı
-- "Analiz Et" → backend `/analyze`
-- "Koça Sor" → tam sohbet ekranı
-
----
-
-## İkonografi
-
-- **Material Icons Rounded** varyantı
-- Gelir: `trending_up_rounded`
-- Gider: `trending_down_rounded`
-- Koç: `auto_awesome_rounded`
-- Analiz: `insights_rounded`
-- Kategori: kullanıcı seçimi (Material icon codePoint)
 
 ---
 
@@ -158,19 +124,12 @@ Tercih `SharedPreferences` ile kalıcı.
 
 ---
 
-## Erişilebilirlik
-
-- Material 3 bileşenleri
-- Minimum kontrast oranı: açık/koyu modda test edildi
-- Dokunma hedefleri: minimum 44×44 logical px (FAB, IconButton)
-- `SnackBar` floating davranışı
-
----
-
 ## Referans Dosyalar
 
 - `frontend/lib/core/theme/app_colors.dart`
 - `frontend/lib/core/theme/app_palette.dart`
 - `frontend/lib/core/theme/app_theme.dart`
+- `frontend/lib/core/widgets/app_logo.dart`
+- `frontend/lib/core/widgets/app_screen_header.dart`
 - `frontend/lib/core/widgets/glass_card.dart`
 - `frontend/lib/core/widgets/gradient_background.dart`
