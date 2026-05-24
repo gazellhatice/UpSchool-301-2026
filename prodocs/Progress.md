@@ -72,6 +72,8 @@ Proje geliştirme günlüğü: yapılan işler, alınan kararlar ve karşılaş�
 | 24 May | Auth onboarding (3 adımlı tanıtım) + sadeleştirilmiş giriş/kayıt |
 | 24 May | Uygulama logosu (`splash_logo.png`) tüm ekranlara yayıldı |
 | 24 May | Emülatör scriptleri: disk kontrolü, cold boot, pencere ortalama |
+| 24 May | **Web responsive layout:** `HomeShellWeb` (sidebar), `HomeShellMobile` (mevcut mobil), breakpoint 900px |
+| 24 May | **Drift web desteği:** `sqlite3.wasm` + `drift_worker.js`, `run_chrome.ps1` otomatik indirme |
 
 **Hatalar & çözümler:**
 
@@ -87,6 +89,8 @@ Proje geliştirme günlüğü: yapılan işler, alınan kararlar ve karşılaş�
 | `StatsHeader` const constructor hatası | `user` parametresi eklenince `const` kaldırıldı |
 | Header'da geçici "HK" metni | `AppLogo` widget ile gerçek logo asset'i |
 | AVD silip yeniden oluşturamama | Disk doluyken AVD oluşturma başarısız; önce boş alan açma |
+| Web'de `dart:ffi is not available` derleme hatası | `drift/native.dart` kaldırıldı; `drift_flutter` + `DriftWebOptions` kullanıldı |
+| `drift_worker.dart.js` GitHub'da bulunamadı | Doğru asset adı `drift_worker.js` (drift 2.31.0 release) |
 
 **Alınan kararlar:**
 
@@ -97,6 +101,8 @@ Proje geliştirme günlüğü: yapılan işler, alınan kararlar ve karşılaş�
 | `--dart-define=BACKEND_URL` | Web ve mobil için farklı backend adresi |
 | Onboarding + auth ayrımı | Tanıtım kaydırılır; giriş ekranı sade kalır |
 | Chrome script (`run_chrome.ps1`) | Emülatör sorunlu ortamda hızlı test |
+| Mobil/web shell ayrımı | Mobil UI bozulmadan web layout eklendi; ortak tab widget'ları paylaşılır |
+| Drift WASM web | Web'de native SQLite yerine tarayıcı uyumlu Drift WebAssembly |
 
 ---
 

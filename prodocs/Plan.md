@@ -31,6 +31,7 @@
 | # | Adım | Dosyalar | Durum |
 |---|------|----------|-------|
 | 2.1 | Drift şema | `app_database.dart` | ✅ |
+| 2.1b | Drift web (WASM) bağlantısı | `app_database.dart`, `web/sqlite3.wasm`, `web/drift_worker.js` | ✅ |
 | 2.2 | Domain modeller | `domain/models/` | ✅ |
 | 2.3 | Repository + sync | `finance_repository.dart` | ✅ |
 | 2.4 | Varsayılan kategoriler | `default_categories.dart` | ✅ |
@@ -43,7 +44,8 @@
 
 | # | Adım | Dosyalar | Durum |
 |---|------|----------|-------|
-| 3.1 | 4 sekme shell | `home_shell.dart` | ✅ |
+| 3.1 | 4 sekme shell (mobil + web router) | `home_shell.dart`, `home_shell_mobile.dart`, `home_shell_web.dart` | ✅ |
+| 3.1b | Responsive breakpoint | `responsive_breakpoints.dart` | ✅ |
 | 3.2 | Özet sekmesi | `dashboard/` | ✅ |
 | 3.3 | Analiz sekmesi | `stats/` | ✅ |
 | 3.4 | Takvim sekmesi | `calendar/` | ✅ |
@@ -75,6 +77,7 @@
 | 5.1 | API anahtarını frontend'den kaldır | ✅ |
 | 5.2 | Firestore security rules | ✅ |
 | 5.3 | Firebase Hosting yapılandırması | ✅ |
+| 5.3b | Web Drift WASM asset'leri + `run_chrome.ps1` | ✅ |
 | 5.4 | Render backend config | ✅ |
 | 5.5 | Backend canlı deploy | ⏳ |
 | 5.6 | Frontend web canlı deploy | ⏳ |

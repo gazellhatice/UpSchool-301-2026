@@ -14,10 +14,11 @@
 │ Firebase Cloud  │
 └─────────────────┘
          │
-         │ Drift (SQLite) — offline-first
+         │ Drift — offline-first (mobil: SQLite, web: WASM)
          ▼
 ┌─────────────────┐
-│  Yerel cihaz DB │
+│  Yerel DB       │
+│  mobil / web    │
 └─────────────────┘
 ```
 
@@ -32,13 +33,23 @@ Frontend ve backend **ayrı katmanlar** olarak tasarlandı. LLM çağrıları ya
 | Flutter 3.x | Cross-platform UI | Android, iOS, Web tek kod tabanı |
 | Dart ^3.5 | Uygulama dili | Tip güvenliği, Flutter ekosistemi |
 | Riverpod | State management | Reaktif, test edilebilir |
-| Drift (SQLite) | Yerel DB | Offline-first |
+| Drift (SQLite / WASM) | Yerel DB | Mobil: dosya tabanlı SQLite; Web: `sqlite3.wasm` + `drift_worker.js` |
+| drift_flutter | DB bağlantısı | Platforma göre native veya web executor |
 | Firebase Auth | Kimlik doğrulama | E-posta + Google OAuth |
 | Cloud Firestore | Bulut senkronu | Kullanıcı bazlı koleksiyonlar |
 | fl_chart | Grafikler | Pasta grafik, trend |
 | table_calendar | Takvim | Günlük işlem görünümü |
 | Google Fonts | Tipografi | Plus Jakarta Sans |
 | http | Backend client | REST API çağrıları |
+
+### Web layout
+
+| Bileşen | Dosya | Açıklama |
+|---------|-------|----------|
+| Breakpoint | `responsive_breakpoints.dart` | ≥900px → web, altında mobil |
+| Mobil shell | `home_shell_mobile.dart` | Alt tab bar + FAB (değiştirilmedi) |
+| Web shell | `home_shell_web.dart` | Sol sidebar, max 1200px içerik |
+| Router | `home_shell.dart` | Ekran genişliğine göre shell seçimi |
 
 ---
 
@@ -71,7 +82,7 @@ Frontend ve backend **ayrı katmanlar** olarak tasarlandı. LLM çağrıları ya
 
 | Servis | Rol |
 |--------|-----|
-| Firebase Hosting | Web frontend |
+| Firebase Hosting | Web frontend (Flutter build/web) |
 | Render | Backend API |
 | Firebase Console | Auth, Firestore, kurallar |
 
@@ -91,6 +102,7 @@ Frontend ve backend **ayrı katmanlar** olarak tasarlandı. LLM çağrıları ya
 2. **Offline-first:** Kayıt internetsiz yapılır; AI için bağlantı gerekir.
 3. **Financial context injection:** Generic chatbot yerine kişisel veriye dayalı koç.
 4. **Firebase token auth:** Backend yalnızca doğrulanmış kullanıcıya yanıt verir.
+5. **Responsive web shell:** Mobil kod korunarak web için ayrı layout; aynı auth ve Firestore senkronu.
 
 ---
 
@@ -100,4 +112,4 @@ Frontend ve backend **ayrı katmanlar** olarak tasarlandı. LLM çağrıları ya
 |-----|------|
 | Statik analiz | `flutter analyze` |
 | Widget test | `flutter test` |
-| Manuel QA | Android emülatör, Chrome |
+| Manuel QA | Android emülatör, Chrome (web responsive) |

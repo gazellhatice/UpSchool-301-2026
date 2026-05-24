@@ -100,10 +100,19 @@ coachGradient: [#6C63FF → #48CAE4]            // AI Koç
 
 - Tüm ana ekranların arka planı
 
-### NavigationBar
+### NavigationBar (mobil / dar web)
 
 - 4 sekme: Özet, Analiz, Takvim, Profil
 - `IndexedStack` ile state korunur
+- Ekran genişliği **<900px** iken kullanılır (`home_shell_mobile.dart`)
+
+### Web Sidebar (geniş ekran)
+
+- Ekran genişliği **≥900px** iken aktif (`home_shell_web.dart`)
+- Sol panel genişliği: **260px**
+- İçerik max genişlik: **1200px**, ortalanmış
+- Sidebar: logo + uygulama adı, navigasyon butonları, Finans Koçu (filled), İşlem ekle (outlined), kullanıcı kartı
+- Seçili nav: `%14 primary` arka plan, primary renk ikon
 
 ### Coach Chat
 
@@ -126,6 +135,10 @@ Tercih `SharedPreferences` ile kalıcı.
 
 ## Referans Dosyalar
 
+- `frontend/lib/core/layout/responsive_breakpoints.dart`
+- `frontend/lib/features/home/presentation/home_shell.dart`
+- `frontend/lib/features/home/presentation/home_shell_mobile.dart`
+- `frontend/lib/features/home/presentation/home_shell_web.dart`
 - `frontend/lib/core/theme/app_colors.dart`
 - `frontend/lib/core/theme/app_palette.dart`
 - `frontend/lib/core/theme/app_theme.dart`

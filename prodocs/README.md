@@ -23,10 +23,11 @@ Bu klasör, projenin ürün tanımı, teknik planı, tasarım kuralları ve geli
 
 ## Hızlı bağlam
 
-- **Frontend:** `../frontend/` — Flutter (Dart)
+- **Frontend:** `../frontend/` — Flutter (Dart), Android · iOS · **Web**
 - **Backend:** `../backend/` — Node.js Express
 - **Ana AI özellik:** Finans Koçu (Gemini LLM, backend API)
-- **Veri:** Drift (yerel) + Firestore (bulut)
+- **Veri:** Drift (yerel, mobil SQLite / web WASM) + Firestore (bulut, platformlar arası senkron)
+- **Web layout:** ≥900px sidebar, altında mobil tab bar (tek kod tabanı)
 
 ## Ajan / geliştirici kuralları
 

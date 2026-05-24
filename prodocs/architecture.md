@@ -12,6 +12,16 @@ Data (FinanceRepository, Drift, Firestore mappers)
 External (Firebase Auth, Firestore, Backend API, Gemini)
 ```
 
+## Platform stratejisi
+
+| Platform | UI kabuğu | Yerel veri | Bulut |
+|----------|-----------|------------|-------|
+| Android / iOS | `HomeShellMobile` | Drift SQLite (dosya) | Firestore senkron |
+| Web (≥900px) | `HomeShellWeb` (sidebar) | Drift WASM | Firestore senkron |
+| Web (<900px) | `HomeShellMobile` | Drift WASM | Firestore senkron |
+
+Giriş: Firebase Auth (e-posta + Google). Web'de Google `signInWithPopup`; mobilde native Google Sign-In. Aynı `uid` → aynı Firestore verisi.
+
 ## AI Koç Veri Akışı
 
 ```
@@ -41,4 +51,17 @@ users/{userId}
 
 - İşlemler önce Drift'e yazılır (`synced: false`)
 - Online olunca FinanceRepository push yapar
+- Girişte `initialize()` → Firestore'dan pull (web'de sayfa yenilense bile veri geri gelir)
 - AI koç internet gerektirir (backend API)
+
+## Web dosyaları
+
+```
+frontend/web/
+├── sqlite3.wasm       # SQLite WebAssembly modülü
+├── drift_worker.js    # Drift arka plan worker
+├── index.html
+└── manifest.json
+```
+
+`run_chrome.ps1` bu dosyalar yoksa GitHub release'lerinden indirir.

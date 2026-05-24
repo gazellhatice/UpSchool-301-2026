@@ -10,7 +10,7 @@
 
 ## Bu proje ne?
 
-Kişisel Harcama Koçu, günlük gelir ve giderlerini hızlıca kaydetmeni, aylık bakiyeni ve harcama dağılımını görmeni sağlayan bir mobil uygulamadır. Veriler önce cihazda tutulur, ardından Firebase ile senkronize edilir.
+Kişisel Harcama Koçu, günlük gelir ve giderlerini hızlıca kaydetmeni, aylık bakiyeni ve harcama dağılımını görmeni sağlayan **mobil ve web** uygulamasıdır. Aynı hesapla telefondan veya tarayıcıdan giriş yapabilirsin; veriler Firebase üzerinden senkronize edilir. Mobilde veriler önce cihazda tutulur, web'de Drift WebAssembly ile tarayıcıda saklanır.
 
 Uygulamanın ayırt edici tarafı **Finans Koçu**: kullanıcının kendi kayıtlı harcama verilerini okuyarak bütçe, alışkanlık ve hedef konularında kişiselleştirilmiş yanıtlar üretir. Hazır cevaplı bir chatbot değil; her oturumda o ayki gelir, gider ve kategori dağılımı backend'e bağlam olarak gönderilir.
 
@@ -22,11 +22,12 @@ Hedef kitle: Türkiye'deki genç profesyoneller, öğrenciler ve serbest çalı�
 
 ### Giriş ve hesap
 - E-posta / şifre ile kayıt ve giriş
-- Google ile oturum açma
+- Google ile oturum açma (mobil + web)
 - Şifre sıfırlama
 - İlk açılışta 3 adımlı tanıtım (atlanabilir), ardından giriş/kayıt ekranı
+- **Aynı hesap, tüm platformlar:** Mobilde kaydettiğin işlemler web'de de görünür (Firestore senkronu)
 
-### Dört ana sekme
+### Dört ana sekme (mobil + web)
 
 | Sekme | İçerik |
 |-------|--------|
@@ -40,10 +41,16 @@ Hedef kitle: Türkiye'deki genç profesyoneller, öğrenciler ve serbest çalı�
 - Tek tıkla aylık AI analiz özeti
 - LLM çağrıları yalnızca backend üzerinden; API anahtarı istemcide tutulmaz
 
+### Web arayüzü (responsive)
+- **≥900px genişlik:** Sol sidebar navigasyon, ortalanmış içerik (max 1200px), Finans Koçu ve İşlem ekle butonları sidebar'da
+- **<900px genişlik:** Mobil düzen (alt tab bar + FAB) — telefon ve dar tarayıcı penceresi
+- Tek Flutter kod tabanı; mobil kod ayrı shell dosyasında korunur (`home_shell_mobile.dart` / `home_shell_web.dart`)
+
 ### Veri modeli
-- **Offline-first:** Drift (SQLite) ile yerel kayıt
-- **Bulut senkronu:** Firebase Firestore
-- Uçak modunda işlem eklenebilir; bağlantı gelince senkron devam eder
+- **Offline-first (mobil):** Drift (SQLite) ile yerel kayıt
+- **Web:** Drift WebAssembly (`sqlite3.wasm` + `drift_worker.js`) ile tarayıcıda yerel DB
+- **Bulut senkronu:** Firebase Firestore — platformlar arası aynı hesap
+- Uçak modunda (mobil) işlem eklenebilir; bağlantı gelince senkron devam eder
 
 ---
 
@@ -115,14 +122,24 @@ npm install
 npm run dev
 ```
 
-**Frontend:**
+**Frontend (mobil + web):**
 ```powershell
 cd frontend
 flutter pub get
-.\run_chrome.ps1
+.\run_chrome.ps1    # Web (Chrome) — wasm dosyalarını otomatik indirir
+.\run_emulator.ps1 # Android emülatör
 ```
 
+`run_chrome.ps1` ilk çalıştırmada `web/sqlite3.wasm` ve `web/drift_worker.js` dosyalarını indirir (Drift web veritabanı için gerekli).
+
 Finans Koçu için backend'in `http://localhost:3001` adresinde açık olması gerekir. Android emülatörde `frontend/run_emulator.ps1` script'i `adb reverse` işlemini otomatik yapar.
+
+**Web canlı deploy (Firebase Hosting):**
+```powershell
+cd frontend
+flutter build web --no-tree-shake-icons --dart-define=BACKEND_URL=https://YOUR-BACKEND.onrender.com
+firebase deploy --only hosting
+```
 
 Firebase ilk kurulum: `frontend/` içinde `flutterfire configure`, ardından `firebase deploy --only firestore:rules`.
 

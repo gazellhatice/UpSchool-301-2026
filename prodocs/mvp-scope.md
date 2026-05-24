@@ -6,7 +6,7 @@ Minimum Viable Product için dahil edilenler, bilinçli ertelenenler ve kabul kr
 
 ## MVP hedefi
 
-Kullanıcının hesabıyla giriş yapıp gelir/gider kaydı oluşturarak aylık özetini görmesini ve temel harcama analizini yapmasını sağlayan, çevrimdışı da kullanılabilen bir mobil uygulama.
+Kullanıcının hesabıyla giriş yapıp gelir/gider kaydı oluşturarak aylık özetini görmesini ve temel harcama analizini yapmasını sağlayan, **mobil ve web'de** çalışan, çevrimdışı da kullanılabilen bir uygulama.
 
 ---
 
@@ -21,6 +21,7 @@ Kullanıcının hesabıyla giriş yapıp gelir/gider kaydı oluşturarak aylık 
 | Senkron | Drift + Firestore, offline kuyruk | ✅ |
 | AI Koç | Backend API, sohbet, aylık analiz | ✅ |
 | UX | tr_TR, açık/koyu tema, onboarding | ✅ |
+| Web | Responsive layout, aynı hesapla tarayıcı erişimi, Drift WASM | ✅ |
 
 ---
 
@@ -39,6 +40,8 @@ Kullanıcının hesabıyla giriş yapıp gelir/gider kaydı oluşturarak aylık 
 - [ ] Takvimde günlük işlemler listeleniyor
 - [ ] Offline işlem kalıcı; online senkron çalışıyor
 - [ ] AI koç backend'e bağlanıp yanıt üretiyor
+- [ ] Web'de (Chrome) giriş yapılıp aynı hesap verileri görünüyor
+- [ ] Geniş tarayıcı penceresinde sidebar layout çalışıyor
 
 ---
 

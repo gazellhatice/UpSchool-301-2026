@@ -14,7 +14,7 @@ Birçok kullanıcı harcamalarını dağınık notlarda, banka uygulamalarında 
 
 ### 1.2 Çözüm
 
-**Kişisel Harcama Koçu**, mobil-first bir finans takip uygulamasıdır. Kullanıcı işlemlerini saniyeler içinde kaydeder; uygulama aylık bakiye, gider dağılımı ve günlük takvim görünümü sunar. **Yapay zeka destekli Finans Koçu**, kullanıcının gerçek harcama verilerine dayanarak kişiselleştirilmiş bütçe tavsiyeleri verir. Veriler önce cihazda tutulur, sonra bulutta yedeklenir.
+**Kişisel Harcama Koçu**, mobil-first bir finans takip uygulamasıdır; **aynı Flutter kod tabanından web sürümü** de sunulur. Kullanıcı işlemlerini saniyeler içinde kaydeder; uygulama aylık bakiye, gider dağılımı ve günlük takvim görünümü sunar. **Yapay zeka destekli Finans Koçu**, kullanıcının gerçek harcama verilerine dayanarak kişiselleştirilmiş bütçe tavsiyeleri verir. Veriler önce cihazda (mobil) veya tarayıcıda (web) tutulur, sonra bulutta yedeklenir.
 
 ### 1.3 Ürün vizyonu
 
@@ -50,6 +50,8 @@ Birçok kullanıcı harcamalarını dağınık notlarda, banka uygulamalarında 
 | US-10 | Yanlış işlemi silmek istiyorum. | P1 |
 | US-11 | AI finans koçuna soru sormak istiyorum; gerçek harcamalarıma göre tavsiye alsın. | P0 |
 | US-12 | Aylık AI finans özetini tek tıkla görmek istiyorum. | P0 |
+| US-13 | Aynı hesapla tarayıcıdan (web) giriş yapıp mobildeki verilerimi görmek istiyorum. | P0 |
+| US-14 | Geniş ekranda (masaüstü tarayıcı) sidebar ile rahat gezinebilmek istiyorum. | P1 |
 
 ---
 
@@ -65,6 +67,8 @@ Birçok kullanıcı harcamalarını dağınık notlarda, banka uygulamalarında 
 | Senkron | Drift (yerel) + Firestore (bulut), offline kuyruk | ✅ |
 | AI Finans Koçu | Backend API, Gemini, kişisel bağlam, sohbet geçmişi | ✅ |
 | Profil & ayarlar | Tema, manuel sync, çıkış, gizlilik metni | ✅ |
+| Web arayüzü | Responsive layout (≥900px sidebar), aynı auth & Firestore senkronu | ✅ |
+| Platform | Android, iOS, Web (Flutter tek kod tabanı) | ✅ |
 
 **Post-MVP (planlı):** İşlem/kategori düzenleme, bütçe hedefleri, bildirimler.
 
@@ -77,12 +81,16 @@ Splash
   └── AuthGate
         ├── Onboarding (ilk açılış)
         ├── Auth (Giriş | Kayıt)
-        └── HomeShell
+        └── HomeShell (genişlik ≥900px → web sidebar; dar → mobil tab bar)
               ├── Özet
               ├── Analiz
               ├── Takvim
               └── Profil
 ```
+
+**Web layout (≥900px):** Sol sidebar (logo, navigasyon, Finans Koçu, İşlem ekle), sağda ortalanmış içerik alanı (max 1200px).
+
+**Mobil layout (<900px):** Alt `NavigationBar` + sağ altta FAB'lar (mevcut davranış korunur).
 
 Modal: İşlem formu, kategori ekleme, finans koçu sohbeti.
 
