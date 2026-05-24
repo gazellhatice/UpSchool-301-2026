@@ -1,80 +1,59 @@
 # Kişisel Harcama Koçu
 
-> Yapay zeka destekli, Türkçe kişisel finans uygulaması — gelir/gider takibi, görsel analiz ve gerçek verilerine dayalı **Finans Koçu**.
+> Yapay zeka destekli, Türkçe kişisel finans uygulaması — gelir/gider takibi, görsel analiz ve gerçek verilere dayalı **Finans Koçu**.
 
 **Geliştirici:** Hatice Gazell  
-**Başlangıç:** Nisan 2026 · **Sürüm:** 1.0.0 (MVP)  
+**Başlangıç:** Nisan 2026 · **Sürüm:** 1.0.0  
 **Platform:** Android · iOS · Web
 
 ---
 
-## İçindekiler
+## Bu proje ne?
 
-- [Problem ve çözüm](#problem-ve-çözüm)
-- [Öne çıkan özellikler](#öne-çıkan-özellikler)
-- [Mimari](#mimari)
-- [Teknoloji özeti](#teknoloji-özeti)
-- [Repo yapısı](#repo-yapısı)
-- [Gereksinimler](#gereksinimler)
-- [Yerel kurulum](#yerel-kurulum)
-- [Canlıya alma](#canlıya-alma)
-- [API](#api)
-- [Dokümantasyon](#dokümantasyon)
-- [Güvenlik](#güvenlik)
+Kişisel Harcama Koçu, günlük gelir ve giderlerini hızlıca kaydetmeni, aylık bakiyeni ve harcama dağılımını görmeni sağlayan bir mobil uygulamadır. Veriler önce cihazda tutulur, ardından Firebase ile senkronize edilir.
+
+Uygulamanın ayırt edici tarafı **Finans Koçu**: kullanıcının kendi kayıtlı harcama verilerini okuyarak bütçe, alışkanlık ve hedef konularında kişiselleştirilmiş yanıtlar üretir. Hazır cevaplı bir chatbot değil; her oturumda o ayki gelir, gider ve kategori dağılımı backend'e bağlam olarak gönderilir.
+
+Hedef kitle: Türkiye'deki genç profesyoneller, öğrenciler ve serbest çalışanlar. Arayüz Türkçe, para birimi ₺.
 
 ---
 
-## Problem ve çözüm
+## Özellikler
 
-**Problem:** Birçok kişi harcamalarını dağınık notlarda veya hiç takip etmeden yönetiyor. Ay sonunda nereye harcadığını bilmemek bütçe planlamasını zorlaştırıyor.
-
-**Çözüm:** Kişisel Harcama Koçu, gelir ve giderleri saniyeler içinde kaydetmeni sağlar; aylık bakiye, kategori analizi ve takvim görünümü sunar. **Finans Koçu** ise senin gerçek harcama verilerini okuyarak kişiselleştirilmiş tavsiyeler verir — generic bir sohbet botu değil.
-
-**Hedef kitle:** Türkiye'deki genç profesyoneller, öğrenciler ve serbest çalışanlar (Türkçe arayüz, ₺ para birimi).
-
----
-
-## Öne çıkan özellikler
-
-### Kimlik ve güvenlik
+### Giriş ve hesap
 - E-posta / şifre ile kayıt ve giriş
-- Google ile tek tıkla oturum açma
-- Şifre sıfırlama, Firebase Authentication
-- Firestore kuralları: kullanıcı yalnızca kendi verisine erişir
+- Google ile oturum açma
+- Şifre sıfırlama
+- İlk açılışta 3 adımlı tanıtım (atlanabilir), ardından giriş/kayıt ekranı
 
-### Dört ana ekran
+### Dört ana sekme
 
-| Sekme | Ne sunar? |
-|-------|-----------|
+| Sekme | İçerik |
+|-------|--------|
 | **Özet** | Aylık gelir/gider, net bakiye, bütçe kullanım oranı, son işlemler, 7 günlük grafik, AI özet kartı |
 | **Analiz** | Pasta grafik, kategori kırılımı, aylık trend, otomatik içgörüler |
 | **Takvim** | Ay görünümü, günlük işlem listesi, ısı haritası |
 | **Profil** | Tema, kategori yönetimi, manuel senkron, gizlilik metni, çıkış |
 
-### Yapay zeka — Finans Koçu
-- Kullanıcının **gerçek** gelir, gider ve kategori verisi backend'e bağlam olarak gider
+### Finans Koçu (AI)
 - Sohbet: bütçe soruları, harcama alışkanlığı, hedef belirleme
 - Tek tıkla aylık AI analiz özeti
-- LLM çağrıları **yalnızca backend** üzerinden; API anahtarı istemcide tutulmaz
+- LLM çağrıları yalnızca backend üzerinden; API anahtarı istemcide tutulmaz
 
-### Offline-first veri
-- İşlemler önce cihazda (Drift / SQLite) kaydedilir
-- İnternet gelince Firebase Firestore ile senkronize edilir
-- Uçak modunda kayıt yapılabilir; veri cihazda kalır
-
-### İlk açılış deneyimi
-- 3 adımlı tanıtım ekranı (atlanabilir)
-- Ardından sade giriş / kayıt formu
+### Veri modeli
+- **Offline-first:** Drift (SQLite) ile yerel kayıt
+- **Bulut senkronu:** Firebase Firestore
+- Uçak modunda işlem eklenebilir; bağlantı gelince senkron devam eder
 
 ---
 
 ## Mimari
 
-Frontend ve backend **ayrı katmanlar** olarak tasarlandı. Backend, ileride farklı istemcilere (mobil, web, üçüncü parti) hizmet verebilecek REST API yapısında yazıldı.
+Frontend (Flutter) ve backend (Node.js Express) birbirinden ayrıdır. Backend, LLM isteklerini karşılayan REST API katmanıdır.
 
 ```mermaid
 flowchart LR
-  subgraph client [Frontend - Flutter]
+  subgraph client [Frontend]
     UI[Ekranlar]
     Drift[(Drift SQLite)]
     UI --> Drift
@@ -85,7 +64,7 @@ flowchart LR
     FS[Firestore]
   end
 
-  subgraph server [Backend - Node.js]
+  subgraph server [Backend]
     API[Express REST]
     LLM[Gemini / OpenRouter]
     API --> LLM
@@ -94,211 +73,85 @@ flowchart LR
   UI --> Auth
   UI --> FS
   Drift <-->|senkron| FS
-  UI -->|HTTPS + Firebase token| API
+  UI -->|HTTPS| API
 ```
 
-**AI koç akışı (kısaca):**
-1. Kullanıcı soru yazar veya "Analiz Et"e basar.
-2. Frontend yerel veritabanından ay özeti oluşturur.
-3. `POST /api/v1/coach/chat` veya `/analyze` çağrılır.
-4. Backend Gemini (veya OpenRouter) ile yanıt üretir.
-5. Yanıt ekranda gösterilir; sohbet geçmişi Firestore'a kaydedilir.
-
-Detaylı mimari: [prodocs/architecture.md](prodocs/architecture.md)
+**Koç akışı:** Kullanıcı soru sorar → frontend yerel veriden ay özeti oluşturur → backend LLM'e gönderir → yanıt ekranda gösterilir, sohbet geçmişi Firestore'a yazılır.
 
 ---
 
-## Teknoloji özeti
+## Teknolojiler
 
-| Katman | Teknolojiler |
-|--------|--------------|
-| **Frontend** | Flutter 3 · Dart · Riverpod · Drift · Firebase Auth/Firestore · fl_chart |
-| **Backend** | Node.js 20 · Express · Gemini SDK · OpenRouter · firebase-admin |
-| **AI** | Google Gemini 2.0 Flash (birincil), OpenRouter fallback |
-| **Deploy** | Firebase Hosting (web) · Render (API) |
+| Katman | Kullanılan |
+|--------|------------|
+| Frontend | Flutter · Dart · Riverpod · Drift · Firebase · fl_chart |
+| Backend | Node.js · Express · Gemini SDK · OpenRouter · firebase-admin |
+| AI | Gemini 2.0 Flash, OpenRouter fallback |
 
-Tam liste ve gerekçeler: [prodocs/tech-stack.md](prodocs/tech-stack.md)
+Detay: [prodocs/tech-stack.md](prodocs/tech-stack.md)
 
 ---
 
 ## Repo yapısı
 
 ```
-├── frontend/          Flutter uygulaması (lib/, android/, ios/, web/)
-│   ├── firebase.json  Firebase Hosting + Firestore deploy
-│   └── run_*.ps1      Yerel çalıştırma scriptleri (Chrome / emülatör)
-├── backend/           Node.js REST API (LLM proxy)
-├── prodocs/           PRD, plan, tasarım sistemi, geliştirme günlüğü
-├── README.md          Bu dosya
+├── frontend/     Flutter uygulaması
+├── backend/      Node.js REST API
+├── prodocs/      PRD, plan, tasarım, geliştirme günlüğü
+├── README.md
 ├── .gitignore
-└── .env.example       Ortam değişkeni şablonu (gerçek key yok)
+└── .env.example
 ```
 
 ---
 
-## Canlı demo
+## Projeyi çalıştırma
 
-| Bileşen | URL |
-|---------|-----|
-| Web uygulaması | *(deploy sonrası buraya ekle)* |
-| Backend `/health` | *(deploy sonrası buraya ekle)* |
-
----
-
-## Gereksinimler
-
-**Frontend**
-- Flutter SDK 3.5+
-- Android Studio veya VS Code
-- Firebase projesi (Auth + Firestore)
-
-**Backend**
-- Node.js 18+
-- Gemini API key veya OpenRouter key
-
-**Opsiyonel**
-- Android emülatör veya fiziksel cihaz
-- Firebase CLI (`firebase deploy` için)
-
----
-
-## Yerel kurulum
-
-### 1. Repoyu klonla
-
-```powershell
-git clone https://github.com/gazellhatice/UpSchool-301-2026.git
-cd UpSchool-301-2026
-```
-
-### 2. Backend'i başlat
-
+**Backend** (ayrı terminal):
 ```powershell
 cd backend
 copy .env.example .env
-```
-
-`.env` dosyasını düzenle:
-- `OPENROUTER_API_KEY` veya `GEMINI_API_KEY`
-- `AI_PROVIDER=openrouter` veya `gemini`
-- `CORS_ORIGINS` (Chrome için `http://localhost:8080` ekle)
-
-```powershell
 npm install
 npm run dev
 ```
 
-Backend `http://localhost:3001` adresinde çalışır. Test: `http://localhost:3001/health`
-
-### 3. Frontend'i yapılandır
-
+**Frontend:**
 ```powershell
 cd frontend
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
-```
-
-Firebase henüz kurulmadıysa:
-```powershell
-dart pub global activate flutterfire_cli
-flutterfire configure
-```
-
-### 4. Uygulamayı çalıştır
-
-**Chrome (en kolay yol):**
-```powershell
-cd frontend
 .\run_chrome.ps1
 ```
 
-**Android emülatör:**
-```powershell
-cd frontend
-.\run_emulator.ps1 -ColdBoot
-```
+Finans Koçu için backend'in `http://localhost:3001` adresinde açık olması gerekir. Android emülatörde `frontend/run_emulator.ps1` script'i `adb reverse` işlemini otomatik yapar.
 
-> **Finans Koçu için backend açık olmalı.** Emülatörde port yönlendirme `run_emulator.ps1` ile otomatik yapılır (`adb reverse tcp:3001 tcp:3001`). Elle çalıştırıyorsan backend + reverse komutunu unutma.
-
-### 5. Firestore kuralları (ilk kurulum)
-
-```powershell
-cd frontend
-firebase deploy --only firestore:rules
-```
+Firebase ilk kurulum: `frontend/` içinde `flutterfire configure`, ardından `firebase deploy --only firestore:rules`.
 
 ---
 
-## Canlıya alma
-
-### Backend → Render
-
-1. [render.com](https://render.com) → New Web Service
-2. **Root Directory:** `backend`
-3. **Build command:** `npm install`
-4. **Start command:** `npm start`
-5. **Environment variables:**
-   - `GEMINI_API_KEY` veya `OPENROUTER_API_KEY`
-   - `AI_PROVIDER`
-   - `FIREBASE_PROJECT_ID`
-   - `FIREBASE_SERVICE_ACCOUNT` (JSON, tek satır)
-   - `CORS_ORIGINS` → web uygulamanın URL'si
-   - `NODE_ENV=production`
-
-Deploy sonrası `https://YOUR-SERVICE.onrender.com/health` adresini doğrula.
-
-### Frontend Web → Firebase Hosting
-
-```powershell
-cd frontend
-flutter build web --dart-define=BACKEND_URL=https://YOUR-SERVICE.onrender.com
-firebase deploy --only hosting
-```
-
-### Android APK (opsiyonel)
-
-```powershell
-cd frontend
-flutter build apk --dart-define=BACKEND_URL=https://YOUR-SERVICE.onrender.com
-```
-
----
-
-## API
+## API (backend)
 
 | Method | Endpoint | Açıklama |
 |--------|----------|----------|
-| `GET` | `/health` | Sağlık kontrolü |
-| `POST` | `/api/v1/coach/chat` | Finans koçu sohbeti (mesaj geçmişi + finans bağlamı) |
-| `POST` | `/api/v1/coach/analyze` | Aylık AI finans özeti |
+| GET | `/health` | Sağlık kontrolü |
+| POST | `/api/v1/coach/chat` | Finans koçu sohbeti |
+| POST | `/api/v1/coach/analyze` | Aylık AI özeti |
 
-Kimlik doğrulama: `Authorization: Bearer <Firebase ID Token>`  
-Detaylı sözleşme: [prodocs/api-contract.md](prodocs/api-contract.md)
+Sözleşme: [prodocs/api-contract.md](prodocs/api-contract.md)
 
 ---
 
 ## Dokümantasyon
 
-| Dosya | İçerik |
-|-------|--------|
-| [prodocs/PRD.md](prodocs/PRD.md) | Problem, hedef kitle, gereksinimler |
-| [prodocs/Plan.md](prodocs/Plan.md) | Teknik uygulama adımları |
-| [prodocs/tech-stack.md](prodocs/tech-stack.md) | Teknoloji seçimleri, AI kullanımı |
-| [prodocs/DesignSystem.md](prodocs/DesignSystem.md) | Renk, tipografi, bileşen kuralları |
-| [prodocs/Progress.md](prodocs/Progress.md) | Geliştirme günlüğü (Nisan 2026'dan itibaren) |
-| [prodocs/mvp-scope.md](prodocs/mvp-scope.md) | MVP kapsamı ve kabul kriterleri |
+| Dosya | Konu |
+|-------|------|
+| [prodocs/PRD.md](prodocs/PRD.md) | Ürün gereksinimleri |
+| [prodocs/Plan.md](prodocs/Plan.md) | Teknik adımlar |
+| [prodocs/DesignSystem.md](prodocs/DesignSystem.md) | Tasarım sistemi |
+| [prodocs/Progress.md](prodocs/Progress.md) | Geliştirme günlüğü |
+| [prodocs/architecture.md](prodocs/architecture.md) | Mimari detay |
 
 ---
 
 ## Güvenlik
 
-- Gerçek API anahtarları, Firebase service account JSON ve `.env` dosyaları **repoya commit edilmemelidir**.
-- Şablonlar: kök `.env.example` ve `backend/.env.example`
-- LLM anahtarları yalnızca backend ortam değişkenlerinde tutulur.
-- Firestore kuralları kullanıcı bazlı erişimle sınırlandırılmıştır (`frontend/firestore.rules`).
-
----
-
-## Lisans
-
-Özel kullanım — `publish_to: 'none'`
+API anahtarları ve `.env` dosyaları repoya eklenmez. Şablon: `.env.example` ve `backend/.env.example`. Firestore kuralları kullanıcı bazlı erişimle sınırlandırılmıştır.
