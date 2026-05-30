@@ -167,21 +167,6 @@ Firebase ilk kurulum: `frontend/` içinde `flutterfire configure`, ardından `fi
 
 ---
 
-## Teslim (Future Talent 2026)
-
-| Öğe | Durum |
-|-----|--------|
-| GitHub repo (son commit) | ✅ |
-| Mobil + web uygulama | ✅ |
-| Backend canlı (Render) | ✅ — `prodocs/DEPLOY.md` |
-| Web canlı (Firebase Hosting) | ✅ — `frontend/deploy_web.ps1` |
-| Demo video (≤5 dk) | ✅ — brief akışına uygun |
-| Zorunlu prodocs | ✅ — `prodocs/` |
-
-Canlı URL ve video linkini teslim formuna yazarken kendi Render / Firebase / Loom adreslerini ekle.
-
----
-
 ## API (backend)
 
 | Method | Endpoint | Açıklama |
