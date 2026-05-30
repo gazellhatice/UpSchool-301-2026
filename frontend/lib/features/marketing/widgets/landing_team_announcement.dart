@@ -275,7 +275,7 @@ class _ExpandedPanel extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Proje ana taslakta mobil olarak tasarlanmıştı. '
+                        'Proje ana taslakta mobil olarak yapılmıştı. '
                         'App Store ve Play Store ücretleri nedeniyle ek olarak '
                         'web sürümü de geliştirilip eklenmiştir.',
                         style:
