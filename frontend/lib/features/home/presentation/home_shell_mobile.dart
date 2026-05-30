@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kisisel_harcama_kocu_1/core/navigation/app_navigation.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/home_navigation_provider.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
 import 'package:kisisel_harcama_kocu_1/core/widgets/gradient_background.dart';
@@ -50,7 +51,7 @@ class HomeShellMobile extends ConsumerWidget {
           children: [
             FloatingActionButton(
               heroTag: 'coach_fab',
-              onPressed: () => CoachChatScreen.show(context, user),
+              onPressed: () => CoachChatScreen.open(context, user),
               backgroundColor: const Color(0xFF6C63FF),
               elevation: 4,
               tooltip: 'Finans Koçu',
@@ -78,7 +79,7 @@ class HomeShellMobile extends ConsumerWidget {
             selectedIndex: index,
             height: 68,
             onDestinationSelected: (value) =>
-                ref.read(homeTabIndexProvider.notifier).state = value,
+                navigateToAppTab(context, ref, value),
             destinations: const [
               NavigationDestination(
                 icon: Icon(Icons.space_dashboard_outlined),

@@ -265,7 +265,7 @@ class _CoachInsightCardState extends ConsumerState<CoachInsightCard> {
                 ),
               if (_analysis != null) ...[
                 TextButton.icon(
-                  onPressed: () => CoachChatScreen.show(context, widget.user),
+                  onPressed: () => CoachChatScreen.open(context, widget.user),
                   icon: const Icon(Icons.chat_rounded, size: 18),
                   label: const Text('Koça Sor'),
                 ),

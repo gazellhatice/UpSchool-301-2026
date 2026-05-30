@@ -28,6 +28,8 @@ app.use(
       }
     },
     credentials: true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   }),
 );
 
@@ -77,8 +79,8 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: err.message || 'Sunucu hatası' });
 });
 
-app.listen(port, () => {
-  console.log(`Backend http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Backend http://127.0.0.1:${port}`);
   console.log(`AI sağlayıcı: ${getActiveProvider() ?? 'YOK'}`);
   console.log(`CORS origins: ${allowedOrigins.join(', ')}`);
 });

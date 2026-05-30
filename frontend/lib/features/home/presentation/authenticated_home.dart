@@ -5,6 +5,7 @@ import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/sync_status_provider.dart';
 import 'package:kisisel_harcama_kocu_1/features/auth/data/auth_service.dart';
 import 'package:kisisel_harcama_kocu_1/features/auth/presentation/splash_screen.dart';
+import 'package:kisisel_harcama_kocu_1/core/navigation/app_navigation.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/home_shell.dart';
 
 class AuthenticatedHome extends ConsumerStatefulWidget {
@@ -91,9 +92,11 @@ class _AuthenticatedHomeState extends ConsumerState<AuthenticatedHome> {
       initialData: widget.user,
       builder: (context, snapshot) {
         final user = snapshot.data ?? widget.user;
-        return HomeShell(
-          user: user,
-          authService: widget.authService,
+        return AppNavigationSync(
+          child: HomeShell(
+            user: user,
+            authService: widget.authService,
+          ),
         );
       },
     );

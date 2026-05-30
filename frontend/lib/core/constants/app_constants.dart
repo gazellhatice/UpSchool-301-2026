@@ -2,6 +2,14 @@ abstract final class AppConstants {
   static const appName = 'Kişisel Harcama Koçu';
   static const supportEmail = 'destek@ornek.com';
   static const privacyPolicyUrl = 'https://ornek.com/gizlilik';
+
+  /// Mağaza / APK bağlantıları — yayın öncesi gerçek URL ile güncellenir.
+  static const playStoreUrl =
+      'https://play.google.com/store/apps/details?id=com.kisiselharcamakocu.app';
+  static const appStoreUrl =
+      'https://apps.apple.com/app/kisisel-harcama-kocu/id0000000000';
+  static const apkDownloadUrl =
+      'https://github.com/ornek/kisisel-harcama-kocu/releases/latest/download/app.apk';
   static const authOnboardingCompletedKey = 'auth_onboarding_completed';
 
   static const privacyPolicyBody = '''

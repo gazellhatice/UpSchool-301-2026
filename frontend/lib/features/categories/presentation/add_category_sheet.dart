@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kisisel_harcama_kocu_1/core/layout/adaptive_overlay.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_palette.dart';
@@ -21,10 +22,9 @@ class AddCategorySheet extends ConsumerStatefulWidget {
     String userId, {
     CategoryItem? category,
   }) {
-    return showModalBottomSheet<void>(
+    return showAdaptiveOverlay<void>(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
+      maxWidth: 460,
       builder: (_) => AddCategorySheet(userId: userId, category: category),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kisisel_harcama_kocu_1/core/layout/adaptive_overlay.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/budget_provider.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_palette.dart';
 import 'package:kisisel_harcama_kocu_1/core/utils/currency_format.dart';
@@ -23,10 +24,9 @@ class BudgetEditSheet extends ConsumerStatefulWidget {
     required double? currentBudget,
     required double monthExpense,
   }) {
-    return showModalBottomSheet<void>(
+    return showAdaptiveOverlay<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      maxWidth: 440,
       builder: (_) => BudgetEditSheet(
         userId: userId,
         currentBudget: currentBudget,

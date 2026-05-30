@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:kisisel_harcama_kocu_1/core/layout/adaptive_form_container.dart';
+import 'package:kisisel_harcama_kocu_1/core/layout/adaptive_overlay.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_palette.dart';
 import 'package:kisisel_harcama_kocu_1/domain/models/transaction_item.dart';
@@ -28,10 +30,9 @@ class TransactionFormSheet extends ConsumerStatefulWidget {
     String? initialCategoryId,
     DateTime? initialDate,
   }) {
-    return showModalBottomSheet<void>(
+    return showAdaptiveOverlay<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      maxWidth: 480,
       builder: (_) => TransactionFormSheet(
         userId: userId,
         transaction: transaction,
@@ -125,44 +126,16 @@ class _TransactionFormSheetState extends ConsumerState<TransactionFormSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = context.palette;
     final categoriesAsync = ref.watch(categoriesProvider(widget.userId));
-    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: bottomInset),
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-        decoration: BoxDecoration(
-          color: palette.surface,
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: palette.border),
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: palette.border,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                _isEditing ? 'İşlemi düzenle' : 'Yeni işlem',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-              ),
-              const SizedBox(height: 20),
-              SegmentedButton<TransactionType>(
+    return AdaptiveFormContainer(
+      title: _isEditing ? 'İşlemi düzenle' : 'Yeni işlem',
+      onClose: () => Navigator.of(context).pop(),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SegmentedButton<TransactionType>(
                 segments: const [
                   ButtonSegment(
                     value: TransactionType.expense,
@@ -264,19 +237,17 @@ class _TransactionFormSheetState extends ConsumerState<TransactionFormSheet> {
                 ),
               ),
               const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _saving ? null : _save,
-                child: _saving
-                    ? const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(_isEditing ? 'Güncelle' : 'Kaydet'),
-              ),
-            ],
+          FilledButton(
+            onPressed: _saving ? null : _save,
+            child: _saving
+                ? const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(_isEditing ? 'Güncelle' : 'Kaydet'),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:kisisel_harcama_kocu_1/core/config/app_config.dart';
 import 'package:kisisel_harcama_kocu_1/core/services/backend_url_resolver.dart';
 
 class CoachApiException implements Exception {
@@ -170,12 +169,9 @@ class CoachApiService {
           );
     } on CoachApiException {
       rethrow;
-    } catch (_) {
+    } catch (e) {
       BackendUrlResolver.reset();
-      throw CoachApiException(
-        'Backend\'e ulaşılamadı. Emülatörde önce şunu çalıştır:\n'
-        'adb reverse tcp:3001 tcp:3001',
-      );
+      throw CoachApiException(_connectionErrorMessage(baseUrl, e));
     }
 
     if (response.statusCode == 200) {
@@ -204,6 +200,18 @@ class CoachApiService {
     }
   }
 
+  static String _connectionErrorMessage(String baseUrl, Object? cause) {
+    if (kIsWeb) {
+      return 'Backend\'e ulaşılamadı ($baseUrl).\n'
+          '1) Ayrı terminalde: cd backend → npm run dev\n'
+          '2) Tarayıcıda aç: $baseUrl/health (status ok görmeli)\n'
+          '3) Uygulamayı yeniden başlat: .\\run_chrome.ps1';
+    }
+    return 'Backend\'e ulaşılamadı ($baseUrl).\n'
+        'PowerShell\'de: adb reverse tcp:3001 tcp:3001\n'
+        'Backend: cd backend && npm run dev';
+  }
+
   Future<String> requestAnalysis({
     required User user,
     required FinancialContext financialContext,
@@ -212,14 +220,24 @@ class CoachApiService {
     final token = await _token(user);
     final uri = Uri.parse('$baseUrl/api/v1/coach/analyze');
 
-    final response = await _client.post(
-      uri,
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode({'financialContext': financialContext.toJson()}),
-    );
+    http.Response response;
+    try {
+      response = await _client
+          .post(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              if (token != null) 'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode({'financialContext': financialContext.toJson()}),
+          )
+          .timeout(const Duration(seconds: 45));
+    } on CoachApiException {
+      rethrow;
+    } catch (e) {
+      BackendUrlResolver.reset();
+      throw CoachApiException(_connectionErrorMessage(baseUrl, e));
+    }
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body) as Map<String, dynamic>;

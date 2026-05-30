@@ -45,6 +45,9 @@ Hedef kitle: Türkiye'deki genç profesyoneller, öğrenciler ve serbest çalı�
 - **≥900px genişlik:** Sol sidebar navigasyon, ortalanmış içerik (max 1200px), Finans Koçu ve İşlem ekle butonları sidebar'da
 - **<900px genişlik:** Mobil düzen (alt tab bar + FAB) — telefon ve dar tarayıcı penceresi
 - Tek Flutter kod tabanı; mobil kod ayrı shell dosyasında korunur (`home_shell_mobile.dart` / `home_shell_web.dart`)
+- **Tanıtım sitesi:** `/`, `/hakkimizda`, `/iletisim`, `/gizlilik`, `/giris`
+- **Uygulama URL'leri:** `/uygulama/ozet`, `/analiz`, `/takvim`, `/profil` (yenilemede sekme korunur)
+- **Web:** CSV indirme, PWA manifest, klavye kısayolları (`N`, `K`, `1–4`, `Esc`)
 
 ### Veri modeli
 - **Offline-first (mobil):** Drift (SQLite) ile yerel kayıt
@@ -134,11 +137,11 @@ flutter pub get
 
 Finans Koçu için backend'in `http://localhost:3001` adresinde açık olması gerekir. Android emülatörde `frontend/run_emulator.ps1` script'i `adb reverse` işlemini otomatik yapar.
 
-**Web canlı deploy (Firebase Hosting):**
+**Web canlı deploy:** Adım adım rehber → [prodocs/DEPLOY.md](prodocs/DEPLOY.md)
+
 ```powershell
 cd frontend
-flutter build web --no-tree-shake-icons --dart-define=BACKEND_URL=https://YOUR-BACKEND.onrender.com
-firebase deploy --only hosting
+.\deploy_web.ps1   # Render API URL'sini sorar, build + firebase deploy
 ```
 
 Firebase ilk kurulum: `frontend/` içinde `flutterfire configure`, ardından `firebase deploy --only firestore:rules`.
@@ -165,6 +168,7 @@ Sözleşme: [prodocs/api-contract.md](prodocs/api-contract.md)
 | [prodocs/Plan.md](prodocs/Plan.md) | Teknik adımlar |
 | [prodocs/DesignSystem.md](prodocs/DesignSystem.md) | Tasarım sistemi |
 | [prodocs/Progress.md](prodocs/Progress.md) | Geliştirme günlüğü |
+| [prodocs/DEPLOY.md](prodocs/DEPLOY.md) | Canlı yayın (Render + Firebase) |
 | [prodocs/architecture.md](prodocs/architecture.md) | Mimari detay |
 
 ---

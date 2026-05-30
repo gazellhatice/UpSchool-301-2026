@@ -3,7 +3,6 @@ import 'package:kisisel_harcama_kocu_1/core/constants/app_constants.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_palette.dart';
 import 'package:kisisel_harcama_kocu_1/core/widgets/app_logo.dart';
-import 'package:kisisel_harcama_kocu_1/core/widgets/gradient_background.dart';
 
 class AuthOnboardingScreen extends StatefulWidget {
   const AuthOnboardingScreen({
@@ -72,13 +71,12 @@ class _AuthOnboardingScreenState extends State<AuthOnboardingScreen> {
     final palette = context.palette;
     final isLast = _page == _slides.length - 1;
 
-    return GradientBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 4, 16, 0),
                 child: Align(
@@ -158,7 +156,6 @@ class _AuthOnboardingScreenState extends State<AuthOnboardingScreen> {
             ],
           ),
         ),
-      ),
     );
   }
 }

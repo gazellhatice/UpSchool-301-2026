@@ -13,7 +13,15 @@ abstract final class AppConfig {
     const envUrl = String.fromEnvironment('BACKEND_URL');
     if (envUrl.isNotEmpty) return [envUrl];
 
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    if (kIsWeb) {
+      // Windows'ta localhost bazen IPv6 (::1) olur; Node çoğu zaman 127.0.0.1'de dinler.
+      return [
+        'http://127.0.0.1:3001',
+        'http://localhost:3001',
+      ];
+    }
+
+    if (defaultTargetPlatform == TargetPlatform.android) {
       // 127.0.0.1 → adb reverse tcp:3001 tcp:3001 ile çalışır (Windows firewall bypass)
       // 10.0.2.2 → klasik emülatör → PC yolu
       return [
@@ -22,7 +30,10 @@ abstract final class AppConfig {
       ];
     }
 
-    return ['http://localhost:3001'];
+    return [
+      'http://127.0.0.1:3001',
+      'http://localhost:3001',
+    ];
   }
 
   static String get backendBaseUrl => backendUrlCandidates.first;

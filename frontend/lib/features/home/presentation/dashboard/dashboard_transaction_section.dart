@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:kisisel_harcama_kocu_1/core/layout/responsive_breakpoints.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/home_navigation_provider.dart';
+import 'package:kisisel_harcama_kocu_1/features/home/presentation/dashboard/dashboard_transactions_table.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_palette.dart';
 import 'package:kisisel_harcama_kocu_1/core/utils/currency_format.dart';
+import 'package:kisisel_harcama_kocu_1/core/widgets/app_empty_state.dart';
 import 'package:kisisel_harcama_kocu_1/core/widgets/confirm_dialog.dart';
 import 'package:kisisel_harcama_kocu_1/core/widgets/glass_card.dart';
 import 'package:kisisel_harcama_kocu_1/domain/models/transaction_item.dart';
@@ -30,6 +33,7 @@ class DashboardTransactionSection extends ConsumerWidget {
       ..sort((a, b) => b.date.compareTo(a.date));
     final visible = sorted.take(15).toList();
     final groups = groupTransactionsByDay(visible, (tx) => tx.date);
+    final useTable = ResponsiveBreakpoints.isWideLayout(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,33 +57,27 @@ class DashboardTransactionSection extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         if (transactions.isEmpty)
-          GlassCard(
-            child: Column(
-              children: [
-                Icon(
-                  Icons.receipt_long_rounded,
-                  size: 48,
-                  color: AppColors.primary.withValues(alpha: 0.7),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Henüz işlem yok',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Hızlı ekle chip\'lerinden veya + ile ilk işlemini kaydet.',
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: palette.textSecondary,
-                  ),
-                ),
-              ],
-            ),
+          AppEmptyState(
+            icon: Icons.receipt_long_rounded,
+            title: 'Henüz işlem yok',
+            message:
+                'İlk gelir veya giderini ekleyerek özet ve AI koç önerilerini aktive et.',
+            actionLabel: 'İşlem ekle',
+            onAction: () => TransactionFormSheet.show(context, userId),
           )
-        else ...[
+        else if (useTable) ...[
+          DashboardTransactionsTable(
+            transactions: transactions,
+            onTap: (tx) => TransactionFormSheet.show(
+              context,
+              userId,
+              transaction: tx,
+            ),
+            onDelete: (tx) => ref
+                .read(financeRepositoryProvider(userId))
+                .deleteTransaction(tx.id),
+          ),
+        ] else ...[
           for (final entry in groups.entries) ...[
             Padding(
               padding: const EdgeInsets.only(bottom: 8, top: 4),

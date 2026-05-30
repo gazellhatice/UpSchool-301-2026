@@ -20,4 +20,4 @@ if (-not (Test-Path $driftWorker)) {
 }
 
 Write-Host "Chrome'da baslatiliyor..."
-flutter run -d chrome --dart-define=BACKEND_URL=http://localhost:3001
+flutter run -d chrome --dart-define=BACKEND_URL=http://127.0.0.1:3001

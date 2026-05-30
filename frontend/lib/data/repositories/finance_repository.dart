@@ -233,6 +233,11 @@ class FinanceRepository {
   }
 
   Future<SyncResult> initialize() async {
+    if (await _isOnline()) {
+      await _processPendingDeletes();
+      await _pullRemote();
+    }
+
     final count = await (_db.selectOnly(_db.categories)
           ..addColumns([_db.categories.id.count()])
           ..where(_db.categories.userId.equals(_userId)))
@@ -243,15 +248,28 @@ class FinanceRepository {
       await _seedDefaultCategories();
     }
 
+    await _deduplicateCategories();
+
     return sync();
   }
 
   Future<void> clearLocalUserData() => _db.clearUserData(_userId);
 
   Future<void> _seedDefaultCategories() async {
+    final existing = await (_db.select(_db.categories)
+          ..where((t) => t.userId.equals(_userId)))
+        .get();
+    final existingKeys = {
+      for (final row in existing)
+        '${row.isIncome}_${row.name.trim().toLowerCase()}',
+    };
+
     final now = DateTime.now();
     await _db.batch((batch) {
       for (final seed in DefaultCategories.seeds) {
+        final key = '${seed.isIncome}_${seed.name.trim().toLowerCase()}';
+        if (existingKeys.contains(key)) continue;
+
         batch.insert(
           _db.categories,
           CategoriesCompanion.insert(
@@ -268,6 +286,53 @@ class FinanceRepository {
         );
       }
     });
+  }
+
+  /// Aynı isimli kategoriler (tekrarlı seed/sync) birleştirilir.
+  Future<void> _deduplicateCategories() async {
+    final rows = await (_db.select(_db.categories)
+          ..where((t) => t.userId.equals(_userId)))
+        .get();
+    final groups = <String, List<Category>>{};
+    for (final row in rows) {
+      final key = '${row.isIncome}_${row.name.trim().toLowerCase()}';
+      groups.putIfAbsent(key, () => []).add(row);
+    }
+
+    for (final group in groups.values) {
+      if (group.length <= 1) continue;
+
+      group.sort((a, b) {
+        if (a.isDefault != b.isDefault) {
+          return a.isDefault ? -1 : 1;
+        }
+        return a.updatedAt.compareTo(b.updatedAt);
+      });
+      final keeper = group.first;
+      final now = DateTime.now();
+
+      for (final duplicate in group.skip(1)) {
+        await (_db.update(_db.transactions)
+              ..where((t) => t.categoryId.equals(duplicate.id)))
+            .write(
+              TransactionsCompanion(
+                categoryId: Value(keeper.id),
+                synced: const Value(false),
+                updatedAt: Value(now),
+              ),
+            );
+
+        await (_db.delete(_db.categories)
+              ..where((t) => t.id.equals(duplicate.id)))
+            .go();
+
+        if (await _isOnline()) {
+          try {
+            await _categoriesRef.doc(duplicate.id).delete();
+          } catch (_) {}
+        }
+      }
+    }
   }
 
   Future<void> addTransaction({

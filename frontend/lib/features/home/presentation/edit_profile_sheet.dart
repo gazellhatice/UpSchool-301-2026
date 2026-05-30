@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:kisisel_harcama_kocu_1/core/layout/adaptive_overlay.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/profile/profile_avatars.dart';
 
@@ -9,10 +10,9 @@ class EditProfileSheet extends StatefulWidget {
   final User user;
 
   static Future<void> show(BuildContext context, User user) {
-    return showModalBottomSheet<void>(
+    return showAdaptiveOverlay<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      maxWidth: 480,
       builder: (_) => EditProfileSheet(user: user),
     );
   }

@@ -1,9 +1,15 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kisisel_harcama_kocu_1/core/constants/app_constants.dart';
+import 'package:kisisel_harcama_kocu_1/core/layout/responsive_breakpoints.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
+import 'package:kisisel_harcama_kocu_1/core/router/app_routes.dart';
+import 'package:kisisel_harcama_kocu_1/core/utils/csv_export.dart';
+import 'package:kisisel_harcama_kocu_1/core/utils/transactions_csv.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/budget_provider.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/sync_status_provider.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/theme_provider.dart';
@@ -15,6 +21,7 @@ import 'package:kisisel_harcama_kocu_1/core/widgets/confirm_dialog.dart';
 import 'package:kisisel_harcama_kocu_1/data/repositories/finance_repository.dart';
 import 'package:kisisel_harcama_kocu_1/domain/models/category_item.dart';
 import 'package:kisisel_harcama_kocu_1/features/auth/data/auth_service.dart';
+import 'package:kisisel_harcama_kocu_1/features/auth/presentation/sign_out_action.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/coach_chat_screen.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/dashboard/budget_edit_sheet.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/edit_profile_sheet.dart';
@@ -25,6 +32,7 @@ import 'package:kisisel_harcama_kocu_1/features/home/presentation/profile/profil
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/profile/profile_stats_row.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/profile/settings_section.dart';
 import 'package:kisisel_harcama_kocu_1/features/legal/privacy_policy_screen.dart';
+import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -128,21 +136,53 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     }
   }
 
-  Future<void> _signOut() async {
-    final ok = await showConfirmDialog(
-      context,
-      title: 'Çıkış yap',
-      message: 'Oturumunuz kapatılacak. Yerel veriler bu cihazda kalır.',
-      confirmLabel: 'Çıkış yap',
-      isDestructive: false,
-    );
-    if (!ok) return;
-
-    await ref
+  Future<void> _exportCsv() async {
+    final month = ref.read(selectedMonthProvider);
+    final summary = await ref
         .read(financeRepositoryProvider(widget.user.uid))
-        .clearLocalUserData();
-    ref.read(lastSyncAtProvider.notifier).clear();
-    await widget.authService.signOut();
+        .watchMonthSummary(month)
+        .first;
+    final transactions = summary.transactions;
+    if (transactions.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bu ay için dışa aktarılacak işlem yok'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final monthLabel = DateFormat('yyyy-MM').format(month);
+    final filename = 'islemler-$monthLabel.csv';
+    try {
+      downloadCsvFile(
+        filename: filename,
+        content: buildTransactionsCsv(transactions),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$filename indirildi'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Dışa aktarma başarısız: $e')),
+      );
+    }
+  }
+
+  Future<void> _signOut() async {
+    await performSignOut(
+      context: context,
+      ref: ref,
+      userId: widget.user.uid,
+      authService: widget.authService,
+    );
   }
 
   Future<void> _openSupportEmail() async {
@@ -181,18 +221,22 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
         ? 'Aylık bütçe: ${formatCurrency(budget)}'
         : 'Aylık bütçe hedefi henüz ayarlanmadı';
 
+    final wide = ResponsiveBreakpoints.isWideLayout(context);
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
       children: [
-        AppScreenHeader(
-          sectionLabel: 'Profil',
-          title: widget.user.displayName ?? 'Hesabım',
-          subtitle: 'Ayarlar, kategoriler, senkron ve hesap yönetimi',
-          user: widget.user,
-          showProfileAvatar: false,
-          onCoachTap: () => CoachChatScreen.show(context, widget.user),
-        ),
-        const SizedBox(height: 20),
+        if (!wide) ...[
+          AppScreenHeader(
+            sectionLabel: 'Profil',
+            title: widget.user.displayName ?? 'Hesabım',
+            subtitle: 'Ayarlar, kategoriler, senkron ve hesap yönetimi',
+            user: widget.user,
+            showProfileAvatar: false,
+            onCoachTap: () => CoachChatScreen.open(context, widget.user),
+          ),
+          const SizedBox(height: 20),
+        ],
         ProfileHeroCard(
           user: widget.user,
           onEditTap: _openEditProfile,
@@ -254,6 +298,21 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                 monthExpense: summary?.expense ?? 0,
               ),
             ),
+            if (csvExportSupported)
+              SettingsTile(
+                icon: Icons.download_rounded,
+                iconColor: AppColors.accent,
+                title: 'İşlemleri CSV indir',
+                subtitle: 'Seçili ay: ${DateFormat('yyyy-MM').format(month)}',
+                onTap: _exportCsv,
+              ),
+            if (kIsWeb)
+              SettingsTile(
+                icon: Icons.install_mobile_rounded,
+                title: 'Ana ekrana ekle',
+                subtitle: 'Tarayıcı menüsünden "Uygulamayı yükle" veya "Ana ekrana ekle"',
+                trailing: const SizedBox.shrink(),
+              ),
           ],
         ),
         const SizedBox(height: 16),
@@ -276,6 +335,10 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
               title: 'Gizlilik politikası',
               subtitle: 'Veri kullanımı ve hakların',
               onTap: () {
+                if (kIsWeb) {
+                  context.go(AppRoutes.privacy);
+                  return;
+                }
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (_) => const PrivacyPolicyScreen(),

@@ -1,12 +1,14 @@
 {
-    "name": "kisisel_harcama_kocu_1",
-    "short_name": "kisisel_harcama_kocu_1",
-    "start_url": ".",
+    "name": "Kişisel Harcama Koçu",
+    "short_name": "Harcama Koçu",
+    "start_url": "/",
+    "scope": "/",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#05070D",
+    "theme_color": "#05070D",
+    "description": "Gelir ve gider takibi, görsel analiz ve AI Finans Koçu.",
+    "orientation": "any",
+    "lang": "tr",
     "prefer_related_applications": false,
     "icons": [
         {

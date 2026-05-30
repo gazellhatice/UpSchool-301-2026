@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/budget_provider.dart';
-import 'package:kisisel_harcama_kocu_1/core/providers/home_navigation_provider.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
-import 'package:kisisel_harcama_kocu_1/core/theme/app_palette.dart';
+import 'package:kisisel_harcama_kocu_1/core/widgets/app_empty_state.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/dashboard/dashboard_utils.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/stats/stats_category_section.dart';
 import 'package:kisisel_harcama_kocu_1/features/home/presentation/stats/stats_donut_chart.dart';
@@ -23,8 +22,6 @@ class StatsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final palette = context.palette;
     final month = ref.watch(selectedMonthProvider);
     final budget = ref.watch(monthlyBudgetProvider(userId));
     final statsAsync = ref.watch(
@@ -55,39 +52,15 @@ class StatsTab extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
             children: [
               StatsHeader(user: user),
-              const SizedBox(height: 48),
-              Icon(
-                Icons.pie_chart_outline_rounded,
-                size: 64,
-                color: AppColors.primary.withValues(alpha: 0.6),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Henüz gider verisi yok',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Gider işlemi eklediğinde pasta grafik, kategori analizi ve '
-                'aylık trend burada görünecek.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: palette.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: FilledButton.icon(
-                  onPressed: () {
-                    ref.read(homeTabIndexProvider.notifier).state = 0;
-                    TransactionFormSheet.show(context, userId);
-                  },
-                  icon: const Icon(Icons.add_rounded),
-                  label: const Text('İlk gideri ekle'),
-                ),
+              const SizedBox(height: 32),
+              AppEmptyState(
+                icon: Icons.pie_chart_outline_rounded,
+                title: 'Henüz gider verisi yok',
+                message:
+                    'Gider işlemi eklediğinde pasta grafik, kategori analizi ve aylık trend burada görünecek.',
+                accentColor: AppColors.primary,
+                actionLabel: 'Gider ekle',
+                onAction: () => TransactionFormSheet.show(context, userId),
               ),
             ],
           );

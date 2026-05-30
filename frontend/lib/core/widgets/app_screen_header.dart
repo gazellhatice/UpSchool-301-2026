@@ -22,6 +22,8 @@ class AppScreenHeader extends ConsumerWidget {
     this.showProfileAvatar = true,
     this.showSyncChip = false,
     this.showCoachButton = true,
+    this.hideBrandLogo = false,
+    this.shellLayout = false,
     this.onCoachTap,
     this.bottom,
   });
@@ -33,6 +35,8 @@ class AppScreenHeader extends ConsumerWidget {
   final bool showProfileAvatar;
   final bool showSyncChip;
   final bool showCoachButton;
+  final bool hideBrandLogo;
+  final bool shellLayout;
   final VoidCallback? onCoachTap;
   final Widget? bottom;
 
@@ -42,51 +46,78 @@ class AppScreenHeader extends ConsumerWidget {
     final palette = context.palette;
     final lastSync = ref.watch(lastSyncAtProvider);
 
+    final titleStyle = shellLayout
+        ? theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
+            height: 1.12,
+          )
+        : theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
+            height: 1.15,
+          );
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            palette.surfaceLight.withValues(alpha: 0.92),
-            palette.surface.withValues(alpha: 0.62),
-          ],
-        ),
-        border: Border.all(color: palette.border),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+      padding: shellLayout
+          ? const EdgeInsets.fromLTRB(0, 4, 0, 14)
+          : const EdgeInsets.fromLTRB(14, 14, 14, 12),
+      decoration: shellLayout
+          ? BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: palette.border.withValues(alpha: 0.85),
+                ),
+              ),
+            )
+          : BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  palette.surfaceLight.withValues(alpha: 0.92),
+                  palette.surface.withValues(alpha: 0.62),
+                ],
+              ),
+              border: Border.all(color: palette.border),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppBrandButton(
-                tooltip: AppConstants.appName,
-                onTap: () => ref.read(homeTabIndexProvider.notifier).state = 0,
-              ),
-              const SizedBox(width: 12),
+              if (!hideBrandLogo) ...[
+                AppBrandButton(
+                  tooltip: AppConstants.appName,
+                  onTap: () =>
+                      ref.read(homeTabIndexProvider.notifier).state = 0,
+                ),
+                const SizedBox(width: 12),
+              ],
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _SectionEyebrow(label: sectionLabel),
-                    const SizedBox(height: 8),
+                    if (shellLayout && hideBrandLogo)
+                      _ShellBreadcrumb(sectionLabel: sectionLabel),
+                    if (shellLayout && hideBrandLogo)
+                      const SizedBox(height: 10)
+                    else
+                      _SectionEyebrow(label: sectionLabel),
+                    if (!shellLayout || !hideBrandLogo)
+                      const SizedBox(height: 8),
                     Text(
                       title,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                        height: 1.15,
-                      ),
+                      style: titleStyle,
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -198,6 +229,49 @@ class AppCoachButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ShellBreadcrumb extends StatelessWidget {
+  const _ShellBreadcrumb({required this.sectionLabel});
+
+  final String sectionLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final theme = Theme.of(context);
+
+    return Row(
+      children: [
+        Icon(
+          Icons.home_work_outlined,
+          size: 14,
+          color: palette.textSecondary,
+        ),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            AppConstants.appName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: palette.textSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: Icon(
+            Icons.chevron_right_rounded,
+            size: 16,
+            color: palette.textSecondary.withValues(alpha: 0.7),
+          ),
+        ),
+        _SectionEyebrow(label: sectionLabel),
+      ],
     );
   }
 }

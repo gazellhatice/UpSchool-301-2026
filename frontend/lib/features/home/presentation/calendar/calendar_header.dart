@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:kisisel_harcama_kocu_1/core/layout/responsive_breakpoints.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_palette.dart';
 import 'package:kisisel_harcama_kocu_1/core/widgets/app_screen_header.dart';
 import 'package:kisisel_harcama_kocu_1/data/repositories/finance_repository.dart';
@@ -27,40 +28,46 @@ class CalendarHeader extends ConsumerWidget {
     final isCurrentMonth =
         focusedMonth.year == now.year && focusedMonth.month == now.month;
 
+    final monthBar = Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: palette.surface.withValues(alpha: 0.72),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: palette.border),
+            ),
+            child: Text(
+              monthLabel,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ),
+        ),
+        if (!isCurrentMonth) ...[
+          const SizedBox(width: 8),
+          FilledButton.tonalIcon(
+            onPressed: onTodayTap,
+            icon: const Icon(Icons.today_rounded, size: 18),
+            label: const Text('Bugün'),
+          ),
+        ],
+      ],
+    );
+
+    if (ResponsiveBreakpoints.isWideLayout(context)) {
+      return monthBar;
+    }
+
     return AppScreenHeader(
       sectionLabel: 'Takvim',
       title: 'Günlük harcama takvimi',
       subtitle: 'İşlem günlerini gör, seçili günün detayına in',
       user: user,
-      onCoachTap: () => CoachChatScreen.show(context, user),
-      bottom: Row(
-        children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: palette.surface.withValues(alpha: 0.72),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: palette.border),
-              ),
-              child: Text(
-                monthLabel,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
-            ),
-          ),
-          if (!isCurrentMonth) ...[
-            const SizedBox(width: 8),
-            FilledButton.tonalIcon(
-              onPressed: onTodayTap,
-              icon: const Icon(Icons.today_rounded, size: 18),
-              label: const Text('Bugün'),
-            ),
-          ],
-        ],
-      ),
+      onCoachTap: () => CoachChatScreen.open(context, user),
+      bottom: monthBar,
     );
   }
 }

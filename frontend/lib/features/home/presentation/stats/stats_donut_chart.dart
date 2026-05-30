@@ -23,6 +23,14 @@ class _StatsDonutChartState extends State<StatsDonutChart> {
   int? _touchedIndex;
 
   @override
+  void didUpdateWidget(covariant StatsDonutChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.stats.length != widget.stats.length) {
+      _touchedIndex = null;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final palette = context.palette;
@@ -56,8 +64,14 @@ class _StatsDonutChartState extends State<StatsDonutChart> {
                             _touchedIndex = null;
                             return;
                           }
-                          _touchedIndex =
+                          final sectionIndex =
                               response!.touchedSection!.touchedSectionIndex;
+                          if (sectionIndex < 0 ||
+                              sectionIndex >= widget.stats.length) {
+                            _touchedIndex = null;
+                          } else {
+                            _touchedIndex = sectionIndex;
+                          }
                         });
                       },
                     ),

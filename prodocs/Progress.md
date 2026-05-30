@@ -74,6 +74,11 @@ Proje geliştirme günlüğü: yapılan işler, alınan kararlar ve karşılaş�
 | 24 May | Emülatör scriptleri: disk kontrolü, cold boot, pencere ortalama |
 | 24 May | **Web responsive layout:** `HomeShellWeb` (sidebar), `HomeShellMobile` (mevcut mobil), breakpoint 900px |
 | 24 May | **Drift web desteği:** `sqlite3.wasm` + `drift_worker.js`, `run_chrome.ps1` otomatik indirme |
+| 24 May | **Tanıtım sitesi (Faz 1):** `go_router`, landing, hakkında, iletişim, gizlilik, navbar, `/giris` → `/uygulama` |
+| 24 May | **Web UX (Faz 2):** adaptive dialog/formlar, koç yan paneli, işlem tablosu, klavye kısayolları, koç yükleme skeleton |
+| 24 May | **SaaS görsel cilası (jüri):** canlı ürün önizlemesi, trust bar, metrik şeridi, jüri alıntısı, geniş auth paneli, `AppEmptyState`, Hakkında geliştirici kartı |
+| 24 May | **SaaS görsel cilası (jüri):** canlı ürün önizlemesi, trust bar, metrik şeridi, jüri alıntısı, geniş auth paneli, `AppEmptyState`, Hakkında geliştirici kartı |
+| 24 May | **Faz 3 — Cilalama + yayın hazırlığı:** `/uygulama/{ozet,analiz,takvim,profil}` URL senkronu, CSV export (web), SEO `index.html`, PWA `manifest.json`, `deploy_web.ps1`, `prodocs/DEPLOY.md`, `render.yaml` |
 
 **Hatalar & çözümler:**
 
@@ -110,8 +115,8 @@ Proje geliştirme günlüğü: yapılan işler, alınan kararlar ve karşılaş�
 
 | Görev | Durum |
 |-------|-------|
-| Backend canlı deploy (Render) | ⏳ |
-| Frontend web deploy (Firebase Hosting) | ⏳ |
+| Backend canlı deploy (Render) | Script hazır — `render.yaml`, `prodocs/DEPLOY.md` |
+| Frontend web deploy (Firebase Hosting) | Script hazır — `frontend/deploy_web.ps1` |
 | Demo videosu (max 5 dk) | ⏳ |
 | `AppConstants` gerçek destek e-postası / gizlilik URL | ⏳ |
 | İşlem ve kategori düzenleme (v1.1) | Planlı |

@@ -6,23 +6,47 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kisisel_harcama_kocu_1/core/config/app_config.dart';
+import 'package:kisisel_harcama_kocu_1/core/layout/responsive_breakpoints.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
+import 'package:kisisel_harcama_kocu_1/core/providers/coach_panel_provider.dart';
+import 'package:kisisel_harcama_kocu_1/core/services/backend_url_resolver.dart';
 import 'package:kisisel_harcama_kocu_1/core/services/coach_api_service.dart';
 import 'package:kisisel_harcama_kocu_1/core/utils/financial_context_builder.dart';
 import 'package:kisisel_harcama_kocu_1/core/widgets/confirm_dialog.dart';
 
 class CoachChatScreen extends ConsumerStatefulWidget {
-  const CoachChatScreen({super.key, required this.user});
+  const CoachChatScreen({
+    super.key,
+    required this.user,
+    this.embedded = false,
+    this.onClose,
+  });
 
   final User user;
+  final bool embedded;
+  final VoidCallback? onClose;
 
-  static Future<void> show(BuildContext context, User user) {
-    return Navigator.of(context).push(
+  /// Geniş web: yan panel; dar / mobil: tam ekran.
+  static void open(BuildContext context, User user) {
+    if (ResponsiveBreakpoints.isWideLayout(context)) {
+      try {
+        ProviderScope.containerOf(context, listen: false)
+            .read(coachPanelOpenProvider.notifier)
+            .state = true;
+        return;
+      } catch (_) {
+        // Provider yoksa tam ekrana düş.
+      }
+    }
+    Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => CoachChatScreen(user: user),
       ),
     );
   }
+
+  @Deprecated('Use CoachChatScreen.open')
+  static void show(BuildContext context, User user) => open(context, user);
 
   @override
   ConsumerState<CoachChatScreen> createState() => _CoachChatScreenState();
@@ -56,9 +80,13 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
       setState(() {
         _connectionStatus = ok
             ? null
-            : 'Backend\'e ulaşılamıyor. PowerShell\'de:\n'
-                'adb reverse tcp:3001 tcp:3001\n'
-                'Sonra uygulamayi yeniden ac.';
+            : kIsWeb
+                ? 'Backend\'e ulaşılamıyor. Terminalde: cd backend → npm run dev\n'
+                    'Tarayıcıda test: http://127.0.0.1:3001/health\n'
+                    'Sonra uygulamayı kapatıp .\\run_chrome.ps1 ile aç.'
+                : 'Backend\'e ulaşılamıyor. PowerShell\'de:\n'
+                    'adb reverse tcp:3001 tcp:3001\n'
+                    'Sonra uygulamayı yeniden aç.';
       });
     }
   }
@@ -142,7 +170,8 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
 
     try {
       if (kDebugMode) {
-        debugPrint('Coach API → ${AppConfig.backendBaseUrl}/api/v1/coach/chat');
+        final base = BackendUrlResolver.cached ?? AppConfig.backendBaseUrl;
+        debugPrint('Coach API → $base/api/v1/coach/chat');
       }
       final api = ref.read(coachApiServiceProvider);
       final history = _messages.where((m) => m.role != 'typing').toList();
@@ -226,61 +255,17 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final hasContext = _buildContext() != null;
 
-    return Scaffold(
-      backgroundColor:
-          isDark ? const Color(0xFF0F0F1A) : const Color(0xFFF5F5FF),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF6C63FF), Color(0xFF48CAE4)],
-                ),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.auto_awesome_rounded,
-                  color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Finans Koçu',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                Text(
-                  hasContext
-                      ? 'Verilerinle kişiselleştirilmiş'
-                      : 'AI destekli asistan',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete_outline_rounded),
-            tooltip: 'Sohbeti temizle',
-            onPressed: _clearHistory,
-          ),
-        ],
-      ),
-      body: Column(
+    final header = _CoachHeader(
+      theme: theme,
+      hasContext: hasContext,
+      embedded: widget.embedded,
+      onBack: widget.embedded
+          ? widget.onClose
+          : () => Navigator.of(context).pop(),
+      onClear: _clearHistory,
+    );
+
+    final body = Column(
         children: [
           if (_connectionStatus != null)
             Container(
@@ -331,7 +316,7 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
             ),
           Expanded(
             child: !_historyLoaded
-                ? const Center(child: CircularProgressIndicator())
+                ? const _ChatLoadingSkeleton()
                 : _messages.isEmpty
                     ? _buildEmptyState(theme)
                     : ListView.builder(
@@ -414,7 +399,28 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
             ),
           ),
         ],
+    );
+
+    if (widget.embedded) {
+      return ColoredBox(
+        color: isDark ? const Color(0xFF0F0F1A) : const Color(0xFFF5F5FF),
+        child: Column(
+          children: [
+            header,
+            Expanded(child: body),
+          ],
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor:
+          isDark ? const Color(0xFF0F0F1A) : const Color(0xFFF5F5FF),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(64),
+        child: header,
       ),
+      body: body,
     );
   }
 
@@ -494,6 +500,124 @@ class _CoachChatScreenState extends ConsumerState<CoachChatScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _CoachHeader extends StatelessWidget implements PreferredSizeWidget {
+  const _CoachHeader({
+    required this.theme,
+    required this.hasContext,
+    required this.embedded,
+    required this.onBack,
+    required this.onClear,
+  });
+
+  final ThemeData theme;
+  final bool hasContext;
+  final bool embedded;
+  final VoidCallback? onBack;
+  final Future<void> Function() onClear;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(64);
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(
+                  embedded ? Icons.close_rounded : Icons.arrow_back_rounded,
+                ),
+                onPressed: onBack,
+              ),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6C63FF), Color(0xFF48CAE4)],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Finans Koçu',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      hasContext
+                          ? 'Verilerinle kişiselleştirilmiş'
+                          : 'AI destekli asistan',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline_rounded),
+                tooltip: 'Sohbeti temizle',
+                onPressed: () => onClear(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChatLoadingSkeleton extends StatelessWidget {
+  const _ChatLoadingSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bubbleColor =
+        isDark ? const Color(0xFF2A2A3E) : const Color(0xFFE8E8F5);
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: List.generate(4, (i) {
+        final alignRight = i.isOdd;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Align(
+            alignment:
+                alignRight ? Alignment.centerRight : Alignment.centerLeft,
+            child: Container(
+              width: 140 + (i * 24).toDouble(),
+              height: 48,
+              decoration: BoxDecoration(
+                color: bubbleColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        );
+      }),
     );
   }
 }

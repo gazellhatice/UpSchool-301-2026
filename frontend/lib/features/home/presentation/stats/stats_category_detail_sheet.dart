@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:kisisel_harcama_kocu_1/core/layout/adaptive_overlay.dart';
 import 'package:kisisel_harcama_kocu_1/core/providers/app_providers.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_colors.dart';
 import 'package:kisisel_harcama_kocu_1/core/theme/app_palette.dart';
@@ -27,10 +28,9 @@ class StatsCategoryDetailSheet extends ConsumerWidget {
     required DateTime month,
     required CategoryItem category,
   }) {
-    return showModalBottomSheet<void>(
+    return showAdaptiveOverlay<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      maxWidth: 560,
       builder: (_) => StatsCategoryDetailSheet(
         userId: userId,
         month: month,
