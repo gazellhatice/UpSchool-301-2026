@@ -14,6 +14,13 @@ abstract final class AppRoutes {
 
   static const authRegisterQuery = 'kayit';
 
+  /// Ekip duyuru popup'ının gösterildiği tanıtım sayfaları.
+  static const teamAnnouncementPaths = [home, about, download, contact];
+
+  static bool showsTeamAnnouncement(String location) {
+    return teamAnnouncementPaths.contains(location);
+  }
+
   static const List<String> appTabPaths = [
     appOzet,
     appAnaliz,
