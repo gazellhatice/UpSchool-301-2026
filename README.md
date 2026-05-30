@@ -2,7 +2,7 @@
 
 > Yapay zeka destekli, Türkçe kişisel finans uygulaması — gelir/gider takibi, görsel analiz ve gerçek verilere dayalı **Finans Koçu**.
 
-**Geliştirici:** Hatice Gazell  
+**Geliştirici:** Hatice Gazel
 **Başlangıç:** Nisan 2026 · **Sürüm:** 1.0.0  
 **Platform:** Android · iOS · Web
 
