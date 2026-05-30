@@ -77,8 +77,11 @@ Proje geliştirme günlüğü: yapılan işler, alınan kararlar ve karşılaş�
 | 24 May | **Tanıtım sitesi (Faz 1):** `go_router`, landing, hakkında, iletişim, gizlilik, navbar, `/giris` → `/uygulama` |
 | 24 May | **Web UX (Faz 2):** adaptive dialog/formlar, koç yan paneli, işlem tablosu, klavye kısayolları, koç yükleme skeleton |
 | 24 May | **SaaS görsel cilası (jüri):** canlı ürün önizlemesi, trust bar, metrik şeridi, jüri alıntısı, geniş auth paneli, `AppEmptyState`, Hakkında geliştirici kartı |
-| 24 May | **SaaS görsel cilası (jüri):** canlı ürün önizlemesi, trust bar, metrik şeridi, jüri alıntısı, geniş auth paneli, `AppEmptyState`, Hakkında geliştirici kartı |
-| 24 May | **Faz 3 — Cilalama + yayın hazırlığı:** `/uygulama/{ozet,analiz,takvim,profil}` URL senkronu, CSV export (web), SEO `index.html`, PWA `manifest.json`, `deploy_web.ps1`, `prodocs/DEPLOY.md`, `render.yaml` |
+| 24 May | **Faz 3 — Cilalama + yayın hazırlığı:** `/uygulama/{ozet,analiz,takvim,profil}` URL senkronu, CSV export (web), SEO `index.html`, PWA `manifest.json`, `deploy_web.ps1`, `prodocs/DEPLOY.md`, `backend/render.yaml` |
+| 24 May | **Web UX iyileştirmeleri:** `AppShellTopBar`, `WebAppSidebar` (ay özeti, hızlı erişim), profil menüden kaldırıldı, `/indir` QR sayfası, navbar linki |
+| 24 May | **Brief uyumu:** Kök `render.yaml` → `backend/`; prodocs + README güncellendi (**mobil + web** ayrı bölümler) |
+| 24 May | **Canlı yayın:** Backend Render + frontend Firebase Hosting deploy tamamlandı |
+| 24 May | **Demo video:** 5 dk teslim videosu kaydedildi (problem → çözüm → mimari → demo → tech stack → kapanış) |
 
 **Hatalar & çözümler:**
 
@@ -111,15 +114,23 @@ Proje geliştirme günlüğü: yapılan işler, alınan kararlar ve karşılaş�
 
 ---
 
-## Devam eden / yapılacak
+## Teslim durumu (Mayıs 2026)
 
 | Görev | Durum |
 |-------|-------|
-| Backend canlı deploy (Render) | Script hazır — `render.yaml`, `prodocs/DEPLOY.md` |
-| Frontend web deploy (Firebase Hosting) | Script hazır — `frontend/deploy_web.ps1` |
-| Demo videosu (max 5 dk) | ⏳ |
-| `AppConstants` gerçek destek e-postası / gizlilik URL | ⏳ |
+| Backend canlı deploy (Render) | ✅ |
+| Frontend web canlı deploy (Firebase Hosting) | ✅ |
+| Demo videosu (max 5 dk) | ✅ |
+| GitHub son commit + prodocs güncel | ✅ |
+| Mobil + web uygulama çalışır durumda | ✅ |
+
+## Post-MVP / iyileştirme (opsiyonel)
+
+| Görev | Durum |
+|-------|-------|
+| `AppConstants` gerçek destek e-postası / gizlilik URL | Planlı |
 | İşlem ve kategori düzenleme (v1.1) | Planlı |
+| Gerçek Play Store / App Store mağaza yayını | Planlı |
 
 ---
 

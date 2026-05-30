@@ -41,15 +41,41 @@ Frontend ve backend **ayrı katmanlar** olarak tasarlandı. LLM çağrıları ya
 | table_calendar | Takvim | Günlük işlem görünümü |
 | Google Fonts | Tipografi | Plus Jakarta Sans |
 | http | Backend client | REST API çağrıları |
+| go_router | URL routing (web) | Tanıtım + `/uygulama/*` deep link |
+| qr_flutter | QR kod (indirme sayfası) | `/indir` sayfasında mobil yönlendirme |
 
-### Web layout
+### Mobil layout (Android / iOS — birincil ürün)
+
+| Bileşen | Dosya | Açıklama |
+|---------|-------|----------|
+| Mobil shell | `home_shell_mobile.dart` | Alt 4 sekmeli `NavigationBar` + FAB'lar |
+| Yerel DB | `app_database.dart` | Drift **SQLite** (native dosya) |
+| Offline | `finance_repository.dart` | `synced: false` kuyruk, bağlantı gelince push |
+| Google Sign-In | `auth_service.dart` | Native OAuth; Firebase SHA-1 |
+| Emülatör | `run_emulator.ps1` | AVD başlatma, `adb reverse tcp:3001` |
+| Sekmeler | `dashboard/`, `stats/`, `calendar/`, `settings_tab.dart` | Mobil + dar web'de ortak |
+
+Mobil kod **ayrı shell dosyasında korunur**; web geniş layout eklenirken mobil UI değiştirilmedi.
+
+### Web — tanıtım sitesi (yalnızca tarayıcı)
+
+| Bileşen | Konum | Açıklama |
+|---------|-------|----------|
+| Marketing shell | `marketing_shell.dart` | Navbar + footer + child |
+| Landing | `landing_page.dart` | Hero, trust bar, ürün önizlemesi |
+| İndir | `download_page.dart` | QR + mağaza bağlantıları |
+| Auth layout | `auth_route_page.dart` | Geniş ekranda marka paneli |
+
+### Web — uygulama kabuğu (giriş sonrası)
 
 | Bileşen | Dosya | Açıklama |
 |---------|-------|----------|
 | Breakpoint | `responsive_breakpoints.dart` | ≥900px → web, altında mobil |
-| Mobil shell | `home_shell_mobile.dart` | Alt tab bar + FAB (değiştirilmedi) |
-| Web shell | `home_shell_web.dart` | Sol sidebar, max 1200px içerik |
+| Mobil shell | `home_shell_mobile.dart` | **Tüm telefonlar** + dar tarayıcı (<900px) |
+| Web shell | `home_shell_web.dart` | Geniş tarayıcı (≥900px) — sidebar |
+| Üst çubuk | `app_shell_top_bar.dart` | Breadcrumb, ay seçici, koç, profil |
 | Router | `home_shell.dart` | Ekran genişliğine göre shell seçimi |
+| URL senkron | `app_navigation.dart` | Sekme ↔ `/uygulama/*` (web) |
 
 ---
 
@@ -82,9 +108,10 @@ Frontend ve backend **ayrı katmanlar** olarak tasarlandı. LLM çağrıları ya
 
 | Servis | Rol |
 |--------|-----|
-| Firebase Hosting | Web frontend (Flutter build/web) |
-| Render | Backend API |
-| Firebase Console | Auth, Firestore, kurallar |
+| Google Play / App Store | Mobil dağıtım (`/indir` QR + demo mağaza linkleri) |
+| Firebase Hosting | Web frontend canlı (`build/web`) — ✅ |
+| Render | Backend API canlı (`backend/render.yaml`) — ✅ |
+| Firebase Console | Auth, Firestore, kurallar — **mobil + web ortak** |
 
 ---
 

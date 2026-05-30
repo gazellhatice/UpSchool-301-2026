@@ -2,6 +2,8 @@
 
 [PRD.md](PRD.md) dosyasından türetilmiş teknik adımlar ve kullanıcı hikâyeleri.
 
+> **Not:** Proje **mobil (Android/iOS) + web** birlikte geliştirildi. Faz 1–4 ve Faz 3 mobil + ortak özelliklerdir. **Faz 3b** yalnızca web'e eklenen tanıtım sitesi ve geniş ekran kabuğudur; mobil shell (`home_shell_mobile.dart`) korunmuştur.
+
 ---
 
 ## Faz 0 — Proje altyapısı
@@ -78,9 +80,30 @@
 | 5.2 | Firestore security rules | ✅ |
 | 5.3 | Firebase Hosting yapılandırması | ✅ |
 | 5.3b | Web Drift WASM asset'leri + `run_chrome.ps1` | ✅ |
-| 5.4 | Render backend config | ✅ |
-| 5.5 | Backend canlı deploy | ⏳ |
-| 5.6 | Frontend web canlı deploy | ⏳ |
+| 5.3c | Mobil geliştirme scriptleri (`run_emulator.ps1`, `adb reverse`) | ✅ |
+| 5.4 | Render backend config (`backend/render.yaml`) | ✅ |
+| 5.5 | Backend canlı deploy (Render) | ✅ |
+| 5.6 | Frontend **web** canlı deploy (`deploy_web.ps1`, Firebase Hosting) | ✅ |
+| 5.7 | Android APK / Play Store (opsiyonel — `/indir` demo linkleri) | ✅ |
+
+---
+
+## Faz 3b — Web ekleri (mobile dokunulmadı) (US-13 … US-17)
+
+Mobil Faz 3 tamamlandıktan **sonra** eklenen web katmanı; `home_shell_mobile.dart` ve 4 sekmeli alt bar aynen durur.
+
+| # | Adım | Dosyalar | Durum |
+|---|------|----------|-------|
+| 3b.1 | `go_router` + route sabitleri | `app_routes.dart`, `router_provider.dart` | ✅ |
+| 3b.2 | Marketing shell, navbar, footer | `marketing_*.dart` | ✅ |
+| 3b.3 | Landing, Hakkında, İletişim, Gizlilik | `landing_page.dart`, `about_page.dart`, … | ✅ |
+| 3b.4 | Mobil indirme sayfası (QR) | `download_page.dart`, `/indir` | ✅ |
+| 3b.5 | Auth sayfa layout (web panel) | `auth_route_page.dart`, `auth_brand_panel.dart` | ✅ |
+| 3b.6 | Web shell üst çubuk + sidebar | `app_shell_top_bar.dart`, `web_app_sidebar.dart` | ✅ |
+| 3b.7 | URL ↔ sekme senkronu | `app_navigation.dart` | ✅ |
+| 3b.8 | CSV export (web) | `csv_export*.dart`, Profil | ✅ |
+| 3b.9 | SEO + PWA | `web/index.html`, `manifest.json` | ✅ |
+| 3b.10 | Koç yan paneli, klavye kısayolları | `coach_panel_provider.dart`, `app_keyboard_shortcuts.dart` | ✅ |
 
 ---
 
@@ -90,15 +113,15 @@
 |---|------|-------|
 | 6.1 | Gizlilik politikası ekranı | ✅ |
 | 6.2 | Uygulama ikonu / splash logo | ✅ |
-| 6.3 | Demo video | ⏳ |
-| 6.4 | Android release imzalama | ⏳ |
+| 6.3 | Demo video (≤5 dk, Loom/YouTube) | ✅ |
+| 6.4 | Android release imzalama (opsiyonel) | ✅ |
 
 ---
 
 ## Bağımlılık sırası
 
 ```
-Faz 0 → Faz 1 → Faz 2 → Faz 3 → Faz 4 → Faz 5 → Faz 6
-                  └──────────────────────────────┘
-                        (AI koç, Faz 2 verisine bağlı)
+Faz 0 → Faz 1 → Faz 2 → Faz 3 (mobil+ortak UI) → Faz 4 → Faz 3b (web ek) → Faz 5 → Faz 6
+                              └──────────────────────────────┘
+                                    (AI koç, Faz 2 verisine bağlı)
 ```

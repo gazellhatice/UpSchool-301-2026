@@ -5,14 +5,15 @@ Bitirme teslimi için **canlı web URL** yeterlidir. Önerilen mimari:
 | Parça | Servis | Not |
 |-------|--------|-----|
 | Frontend (Flutter web) | Firebase Hosting | `frontend/firebase.json` → `build/web` |
-| Backend (Express API) | Render free tier | `render.yaml` veya manuel Web Service |
+| Backend (Express API) | Render free tier | `backend/render.yaml` veya manuel Web Service |
 | Auth + veri | Firebase | Authorized domains + Firestore |
 
 ---
 
 ## 1. Backend (Render)
 
-1. [render.com](https://render.com) → **New Web Service** → repo bağla, **Root Directory:** `backend`
+1. [render.com](https://render.com) → **New Web Service** → repo bağla, **Root Directory:** `backend`  
+   (Blueprint kullanıyorsan şablon: `backend/render.yaml`)
 2. **Build:** `npm install` · **Start:** `npm start`
 3. Ortam değişkenleri (`.env.example` referans):
 
@@ -66,13 +67,14 @@ firebase deploy --only hosting
 
 ## 4. Kontrol listesi
 
-- [ ] Landing `/` açılıyor
-- [ ] `/giris` → kayıt/giriş → `/uygulama/ozet`
-- [ ] Sekme URL’leri: `/uygulama/analiz`, `/takvim`, `/profil` (yenilemede sekme korunur)
-- [ ] Google giriş (web) çalışıyor
-- [ ] Finans Koçu cevap veriyor (`CORS_ORIGINS` doğru)
-- [ ] Profil → CSV indir (web)
-- [ ] Demo video: landing → kayıt → işlem → koç
+- [x] Landing `/` açılıyor
+- [x] `/indir` — QR + mağaza bağlantıları
+- [x] `/giris` → kayıt/giriş → `/uygulama/ozet`
+- [x] Sekme URL’leri: `/uygulama/analiz`, `/takvim`, `/profil` (yenilemede sekme korunur)
+- [x] Google giriş (web) çalışıyor
+- [x] Finans Koçu cevap veriyor (`CORS_ORIGINS` doğru)
+- [x] Profil → CSV indir (web)
+- [x] Demo video: landing → kayıt → işlem → koç
 
 ---
 

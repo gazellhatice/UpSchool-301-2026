@@ -2,6 +2,8 @@
 
 Modern fintech estetiği; gradient arka planlar, cam efektli kartlar, mor-indigo birincil renk.
 
+**Platformlar:** Renk, tipografi ve kart kuralları **mobil ve web'de ortaktır**. Navigasyon iki kabukta ayrılır: `home_shell_mobile.dart` (alt bar) ve `web_app_sidebar.dart` (geniş web).
+
 ---
 
 ## Renk Paleti
@@ -108,11 +110,24 @@ coachGradient: [#6C63FF → #48CAE4]            // AI Koç
 
 ### Web Sidebar (geniş ekran)
 
-- Ekran genişliği **≥900px** iken aktif (`home_shell_web.dart`)
-- Sol panel genişliği: **260px**
+- Ekran genişliği **≥900px** iken aktif (`web_app_sidebar.dart`)
+- Sol panel genişliği: **260px** (`ResponsiveBreakpoints.sidebarWidth`)
 - İçerik max genişlik: **1200px**, ortalanmış
-- Sidebar: logo + uygulama adı, navigasyon butonları, Finans Koçu (filled), İşlem ekle (outlined), kullanıcı kartı
-- Seçili nav: `%14 primary` arka plan, primary renk ikon
+- Bölümler: **Menü** (Özet, Analiz, Takvim) → **Finans Koçu** → **Bu ay** (net/gelir/gider) → **Hızlı erişim** (işlem, bütçe, senkron) → profil kartı + çıkış
+- Profil sekmesi menüde yok; alt kullanıcı kartı (`Profil & ayarlar`) ile `/uygulama/profil`
+- Seçili nav: `%14 primary` arka plan
+
+### App shell üst çubuk (web)
+
+- `app_shell_top_bar.dart` + `AppScreenHeader` (`shellLayout: true`)
+- Breadcrumb, başlık, ay seçici (Özet/Analiz), senkron chip, koç ve profil avatarı
+
+### Tanıtım sitesi (web only)
+
+- `MarketingNavbar`: cam yüzey, logo, linkler (Ana Sayfa, Hakkında, **Uygulamayı indir**, İletişim)
+- `MarketingPageContainer` max **1100px**
+- `GlassCard`, `MarketingSectionHeader`, `ProductPreviewCard` (landing hero)
+- İndirme sayfası: beyaz QR kutusu + mağaza kartları (`download_page.dart`)
 
 ### Coach Chat
 
@@ -139,6 +154,10 @@ Tercih `SharedPreferences` ile kalıcı.
 - `frontend/lib/features/home/presentation/home_shell.dart`
 - `frontend/lib/features/home/presentation/home_shell_mobile.dart`
 - `frontend/lib/features/home/presentation/home_shell_web.dart`
+- `frontend/lib/features/home/presentation/web_app_sidebar.dart`
+- `frontend/lib/features/home/presentation/app_shell_top_bar.dart`
+- `frontend/lib/features/marketing/widgets/marketing_navbar.dart`
+- `frontend/lib/features/marketing/presentation/download_page.dart`
 - `frontend/lib/core/theme/app_colors.dart`
 - `frontend/lib/core/theme/app_palette.dart`
 - `frontend/lib/core/theme/app_theme.dart`

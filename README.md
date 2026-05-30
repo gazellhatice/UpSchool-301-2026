@@ -4,7 +4,8 @@
 
 **Geliştirici:** Hatice Gazel  
 **Başlangıç:** Nisan 2026 · **Sürüm:** 1.0.0  
-**Platform:** Android · iOS · Web
+**Platform:** Android · iOS · Web  
+**Durum:** MVP tamamlandı · Canlı web + backend deploy · Demo video hazır
 
 ---
 
@@ -19,6 +20,8 @@ Hedef kitle: Türkiye'deki genç profesyoneller, öğrenciler ve serbest çalı�
 ---
 
 ## Özellikler
+
+> **Mobil ve web birlikte:** Aynı Flutter projesi, aynı Firebase hesabı, aynı dört sekme (Özet, Analiz, Takvim, Profil). Web'e ek olarak tanıtım sitesi ve geniş ekran sidebar vardır; **mobil uygulama ayrı shell ile korunur.**
 
 ### Giriş ve hesap
 - E-posta / şifre ile kayıt ve giriş
@@ -41,12 +44,20 @@ Hedef kitle: Türkiye'deki genç profesyoneller, öğrenciler ve serbest çalı�
 - Tek tıkla aylık AI analiz özeti
 - LLM çağrıları yalnızca backend üzerinden; API anahtarı istemcide tutulmaz
 
-### Web arayüzü (responsive)
+### Mobil (Android / iOS)
+- **Kabuk:** `home_shell_mobile.dart` — alt **4 sekmeli** gezinme (Özet, Analiz, Takvim, Profil)
+- **FAB:** Finans Koçu + İşlem ekle (Özet ve Takvim'de)
+- **Offline-first:** Drift SQLite; uçak modunda işlem, sonra Firestore senkronu
+- **Google giriş:** Native Sign-In (Firebase SHA-1)
+- **Çalıştırma:** `frontend/run_emulator.ps1` (emülatör + `adb reverse` ile backend)
+
+### Web (tarayıcı)
 - **≥900px genişlik:** Sol sidebar navigasyon, ortalanmış içerik (max 1200px), Finans Koçu ve İşlem ekle butonları sidebar'da
 - **<900px genişlik:** Mobil düzen (alt tab bar + FAB) — telefon ve dar tarayıcı penceresi
 - Tek Flutter kod tabanı; mobil kod ayrı shell dosyasında korunur (`home_shell_mobile.dart` / `home_shell_web.dart`)
-- **Tanıtım sitesi:** `/`, `/hakkimizda`, `/iletisim`, `/gizlilik`, `/giris`
-- **Uygulama URL'leri:** `/uygulama/ozet`, `/analiz`, `/takvim`, `/profil` (yenilemede sekme korunur)
+- **Tanıtım sitesi:** `/`, `/hakkimizda`, `/iletisim`, `/gizlilik`, `/indir`, `/giris`
+- **Uygulama URL'leri:** `/uygulama/ozet`, `/uygulama/analiz`, `/uygulama/takvim`, `/uygulama/profil` (yenilemede sekme korunur)
+- **Geniş web sidebar:** Menü (3 sekme), Finans Koçu, aylık özet, hızlı erişim; profil alttaki kullanıcı kartından
 - **Web:** CSV indirme, PWA manifest, klavye kısayolları (`N`, `K`, `1–4`, `Esc`)
 
 ### Veri modeli
@@ -102,16 +113,24 @@ Detay: [prodocs/tech-stack.md](prodocs/tech-stack.md)
 
 ---
 
-## Repo yapısı
+## Repo yapısı (Future Talent brief)
+
+Brief’e uygun kök dizin — yalnızca şu öğeler repoda tutulur:
 
 ```
-├── frontend/     Flutter uygulaması
-├── backend/      Node.js REST API
-├── prodocs/      PRD, plan, tasarım, geliştirme günlüğü
-├── README.md
+├── frontend/          Flutter — mobil (Android/iOS) + web arayüzü
+├── backend/           Node.js REST API + render.yaml (Render deploy)
+├── prodocs/           PRD, tech-stack, Plan, DesignSystem, Progress, DEPLOY
+├── README.md          Bu dosya (onepager)
 ├── .gitignore
 └── .env.example
 ```
+
+| Klasör | İçerik |
+|--------|--------|
+| `frontend/` | **Mobil** (Android/iOS shell) + **web** (sidebar, marketing, WASM) — tek Flutter kodu |
+| `backend/` | Express API, AI koç, `backend/render.yaml` |
+| `prodocs/` | Zorunlu dokümanlar: `PRD.md`, `tech-stack.md`, `Plan.md`, `DesignSystem.md`, `Progress.md` |
 
 ---
 
@@ -148,6 +167,21 @@ Firebase ilk kurulum: `frontend/` içinde `flutterfire configure`, ardından `fi
 
 ---
 
+## Teslim (Future Talent 2026)
+
+| Öğe | Durum |
+|-----|--------|
+| GitHub repo (son commit) | ✅ |
+| Mobil + web uygulama | ✅ |
+| Backend canlı (Render) | ✅ — `prodocs/DEPLOY.md` |
+| Web canlı (Firebase Hosting) | ✅ — `frontend/deploy_web.ps1` |
+| Demo video (≤5 dk) | ✅ — brief akışına uygun |
+| Zorunlu prodocs | ✅ — `prodocs/` |
+
+Canlı URL ve video linkini teslim formuna yazarken kendi Render / Firebase / Loom adreslerini ekle.
+
+---
+
 ## API (backend)
 
 | Method | Endpoint | Açıklama |
@@ -162,14 +196,25 @@ Sözleşme: [prodocs/api-contract.md](prodocs/api-contract.md)
 
 ## Dokümantasyon
 
+### Zorunlu (brief)
+
 | Dosya | Konu |
 |-------|------|
-| [prodocs/PRD.md](prodocs/PRD.md) | Ürün gereksinimleri |
-| [prodocs/Plan.md](prodocs/Plan.md) | Teknik adımlar |
-| [prodocs/DesignSystem.md](prodocs/DesignSystem.md) | Tasarım sistemi |
+| [prodocs/PRD.md](prodocs/PRD.md) | Problem, hedef kitle, mobil + web özellikler |
+| [prodocs/tech-stack.md](prodocs/tech-stack.md) | Teknolojiler, AI kullanımı, web/mobil ayrımı |
+| [prodocs/Plan.md](prodocs/Plan.md) | Fazlar, kullanıcı hikâyeleri, web pazarlama fazı |
+| [prodocs/DesignSystem.md](prodocs/DesignSystem.md) | Renk, tipografi, mobil + web bileşenler |
 | [prodocs/Progress.md](prodocs/Progress.md) | Geliştirme günlüğü |
-| [prodocs/DEPLOY.md](prodocs/DEPLOY.md) | Canlı yayın (Render + Firebase) |
-| [prodocs/architecture.md](prodocs/architecture.md) | Mimari detay |
+
+### Ek referans
+
+| Dosya | Konu |
+|-------|------|
+| [prodocs/DEPLOY.md](prodocs/DEPLOY.md) | Canlı yayın (Firebase Hosting + Render) |
+| [prodocs/architecture.md](prodocs/architecture.md) | Katmanlar, URL haritası, Firestore |
+| [prodocs/mvp-scope.md](prodocs/mvp-scope.md) | MVP kapsamı ve kabul kriterleri |
+| [prodocs/api-contract.md](prodocs/api-contract.md) | Backend API sözleşmesi |
+| [backend/render.yaml](backend/render.yaml) | Render.com deploy şablonu |
 
 ---
 
